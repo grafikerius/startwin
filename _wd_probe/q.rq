@@ -1,0 +1,14 @@
+SELECT DISTINCT ?personLabel ?birth ?genderLabel ?height ?image ?fame WHERE {
+  ?person wdt:P31 wd:Q5 ;
+          wdt:P569 ?birth ;
+          wikibase:sitelinks ?fame ;
+          wdt:P106 ?occ .
+  VALUES ?occ { wd:Q33999 wd:Q177220 wd:Q937857 wd:Q901 wd:Q2526255 }
+  FILTER(?fame > 130)
+  OPTIONAL { ?person wdt:P21 ?gender . }
+  OPTIONAL { ?person wdt:P2048 ?height . }
+  OPTIONAL { ?person wdt:P18 ?image . }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en,tr" . }
+}
+ORDER BY DESC(?fame)
+LIMIT 20

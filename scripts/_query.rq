@@ -1,0 +1,20 @@
+SELECT ?person ?nameEn ?nameTr ?fame
+       (SAMPLE(?birth) AS ?bd) (SAMPLE(?gender) AS ?gq)
+       (GROUP_CONCAT(DISTINCT ?occ;SEPARATOR=",") AS ?occs)
+       (GROUP_CONCAT(DISTINCT ?h;SEPARATOR=",") AS ?heights)
+       (GROUP_CONCAT(DISTINCT ?cit;SEPARATOR=",") AS ?cits)
+       (SAMPLE(?img) AS ?image) WHERE {
+  VALUES ?occEntity { wd:Q33999 wd:Q10800557 wd:Q10798782 wd:Q2259451 wd:Q2405480 wd:Q177220 wd:Q639669 wd:Q36834 wd:Q753110 wd:Q855091 wd:Q486748 wd:Q2252262 wd:Q488205 wd:Q901 wd:Q169470 wd:Q170790 wd:Q593644 wd:Q864503 wd:Q11063 wd:Q205375 wd:Q81096 wd:Q82594 wd:Q11631 wd:Q937857 wd:Q3665646 wd:Q10833314 wd:Q2066131 wd:Q11338576 wd:Q10841764 wd:Q10843402 wd:Q19204627 wd:Q10871364 wd:Q12299841 wd:Q11774891 wd:Q11303721 wd:Q1028181 wd:Q1281618 wd:Q3391743 wd:Q33231 wd:Q483501 wd:Q3501317 wd:Q2526255 wd:Q1414443 wd:Q28389 wd:Q3282637 wd:Q578109 wd:Q43845 wd:Q131524 wd:Q2304668 wd:Q484876 wd:Q82955 wd:Q372436 wd:Q193391 wd:Q116 wd:Q30461 wd:Q189290 wd:Q36180 wd:Q49757 wd:Q6625963 wd:Q482980 wd:Q1930187 wd:Q4964182 wd:Q214917 }
+  ?person wdt:P106 ?occEntity ; wdt:P31 wd:Q5 ; wikibase:sitelinks ?fame ; wdt:P569 ?birth .
+  FILTER(?fame > 120)
+  OPTIONAL { ?person wdt:P106 ?occRaw . BIND(STRAFTER(STR(?occRaw),"entity/") AS ?occ) }
+  OPTIONAL { ?person wdt:P21 ?gRaw . BIND(STRAFTER(STR(?gRaw),"entity/") AS ?gender) }
+  OPTIONAL { ?person wdt:P2048 ?h . }
+  OPTIONAL { ?person wdt:P18 ?img . }
+  OPTIONAL { ?person wdt:P27 ?citRaw . BIND(STRAFTER(STR(?citRaw),"entity/") AS ?cit) }
+  OPTIONAL { ?person rdfs:label ?nameEn . FILTER(LANG(?nameEn)="en") }
+  OPTIONAL { ?person rdfs:label ?nameTr . FILTER(LANG(?nameTr)="tr") }
+}
+GROUP BY ?person ?nameEn ?nameTr ?fame
+ORDER BY DESC(?fame)
+LIMIT 60
