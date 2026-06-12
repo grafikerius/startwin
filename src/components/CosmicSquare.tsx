@@ -188,6 +188,7 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
           
           if (msgData.receiver_id && msgData.receiver_id !== userId) return;
           if (msgData.receiver_id === userId) return;
+          if (msgData.sender_id === userId) return;
           
           setMessages(prev => {
              if (prev.find(m => m.id === msgData.id)) return prev;
