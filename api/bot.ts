@@ -52,7 +52,9 @@ ${botPersona}
 
 Meydandaki bir kullanıcı şunu yazdı: "${record.message_text}"
 
-Buna meydan sohbetine uygun, samimi bir cevap yaz. Eğer kullanıcı günlük bir şey yazmışsa kısa ve doğal cevap ver (1-2 cümle). Eğer burç, ebced, kader veya derin bir soru sormuşsa mentörlüğünü konuşturarak daha derin, açıklayıcı ve aydınlatıcı bir bilgi ver.`;
+Buna meydan sohbetine uygun, samimi bir cevap yaz. Eğer kullanıcı günlük bir şey yazmışsa kısa ve doğal cevap ver (1-2 cümle). Eğer burç, ebced, kader veya derin bir soru sormuşsa mentörlüğünü konuşturarak daha derin, açıklayıcı ve aydınlatıcı bir bilgi ver.
+
+ÖNEMLİ KURAL: Kullanıcı hangi dilde (Türkçe, İngilizce, vb.) yazdıysa, ona KESİNLİKLE aynı dilde cevap ver!`;
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
     

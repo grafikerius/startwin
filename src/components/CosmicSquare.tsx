@@ -45,6 +45,37 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
   const [showTerms, setShowTerms] = useState(false);
   const [adSettings, setAdSettings] = useState<AdSettings | null>(null);
 
+  const [horoscopeOpen, setHoroscopeOpen] = useState(false);
+  const [loadingHoroscope, setLoadingHoroscope] = useState(false);
+  const [horoscopeText, setHoroscopeText] = useState('');
+
+  const fetchHoroscope = async () => {
+    setHoroscopeOpen(true);
+    setLoadingHoroscope(true);
+    try {
+      const res = await fetch('/api/horoscope', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: user.name,
+          sun_sign: user.sun_sign,
+          mbti_type: user.mbti_type,
+          lang
+        })
+      });
+      const data = await res.json();
+      if (data.horoscope) {
+        setHoroscopeText(data.horoscope);
+      } else {
+        setHoroscopeText(lang === 'tr' ? 'Yıldızlar şu an çok sessiz...' : 'The stars are silent right now...');
+      }
+    } catch (err) {
+      setHoroscopeText(lang === 'tr' ? 'Bağlantı kurulamadı.' : 'Connection failed.');
+    } finally {
+      setLoadingHoroscope(false);
+    }
+  };
+
   useEffect(() => {
     getSystemSettings().then(s => {
       if (s) setAdSettings(s as AdSettings);
@@ -307,10 +338,37 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
 
   return (
     <div className="relative animate-[fade_.5s_ease] flex flex-col h-full text-white">
+      {/* Günün Falı Modal */}
+      {horoscopeOpen && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm rounded-3xl border border-fuchsia-500/30 bg-[#0b0b1a] p-6 shadow-[0_0_40px_rgba(255,0,255,0.2)] text-center animate-[fade_.3s_ease]">
+            <h3 className="text-xl font-black mb-4 bg-gradient-to-r from-fuchsia-300 to-cyan-200 bg-clip-text text-transparent">
+              🔮 Günün Kozmik Falı
+            </h3>
+            {loadingHoroscope ? (
+              <div className="py-8 flex flex-col items-center gap-3">
+                <span className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-fuchsia-400" />
+                <p className="text-sm text-white/50 animate-pulse">Yıldızlar senin için okunuyor...</p>
+              </div>
+            ) : (
+              <p className="text-sm leading-relaxed text-white/90 italic mb-6">"{horoscopeText}"</p>
+            )}
+            <button 
+              onClick={() => setHoroscopeOpen(false)}
+              className="w-full rounded-xl bg-white/10 py-3 font-bold hover:bg-white/20 transition">
+              Kapat
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="p-4 border-b border-white/10 bg-black/40 backdrop-blur-md rounded-t-[2rem]">
         <div className="flex justify-between items-center mb-2 pr-16">
           <h2 className="font-black text-lg bg-gradient-to-r from-fuchsia-400 to-cyan-300 bg-clip-text text-transparent">Kozmik Meydan</h2>
-          <button onClick={handleLogout} className="text-[10px] px-3 py-1.5 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 transition font-bold">Çıkış</button>
+          <div className="flex gap-2">
+            <button onClick={fetchHoroscope} className="text-[10px] px-3 py-1.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 hover:bg-fuchsia-500/30 transition font-bold border border-fuchsia-500/30">🔮 Falım</button>
+            <button onClick={handleLogout} className="text-[10px] px-3 py-1.5 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 transition font-bold">Çıkış</button>
+          </div>
         </div>
         <div className="flex items-center gap-3 text-xs pr-2">
           <span className="text-white/60">Mesafe:</span>
