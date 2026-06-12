@@ -81,8 +81,8 @@ export default function NearbyMatches({ user, onRestart, t, lang }: { user: User
               const matchRes = calculateMatch(user, partnerInput);
               return {
                 ...n,
-                matchScore: matchRes.result.overall,
-                subScores: matchRes.result.sub
+                matchScore: Math.round(matchRes.score),
+                subScores: matchRes.breakdown
               };
             });
 

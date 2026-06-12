@@ -154,7 +154,7 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
              const jitter = Math.floor(Math.random() * 41) - 20; // -20 to +20
              let finalDist = Math.max(1, Math.round(n.distance_meters) + jitter);
              
-             profMap[n.id] = { ...n, matchScore: matchRes.result.overall, distance_meters: finalDist };
+             profMap[n.id] = { ...n, matchScore: Math.round(matchRes.score), distance_meters: finalDist };
           });
           setNearbyProfiles(profMap);
         }
