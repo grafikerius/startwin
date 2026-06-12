@@ -306,9 +306,17 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
   }
 
   return (
-    <div className="relative animate-[fade_.5s_ease] flex flex-col h-[600px] text-white">
+    <div className="relative animate-[fade_.5s_ease] flex flex-col h-full text-white">
       <div className="p-4 border-b border-white/10 bg-black/40 backdrop-blur-md rounded-t-[2rem]">
-        <h2 className="font-black text-lg bg-gradient-to-r from-fuchsia-400 to-cyan-300 bg-clip-text text-transparent">Kozmik Meydan</h2>
+        <div className="flex justify-between items-center mb-2 pr-16">
+          <h2 className="font-black text-lg bg-gradient-to-r from-fuchsia-400 to-cyan-300 bg-clip-text text-transparent">Kozmik Meydan</h2>
+          <button onClick={handleLogout} className="text-[10px] px-3 py-1.5 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 transition font-bold">Çıkış</button>
+        </div>
+        <div className="flex items-center gap-3 text-xs pr-2">
+          <span className="text-white/60">Mesafe:</span>
+          <input type="range" min="100" max="5000" step="100" value={radius} onChange={(e) => setRadius(Number(e.target.value))} className="flex-1 accent-fuchsia-500" />
+          <span className="font-bold text-cyan-300 w-12 text-right">{radius < 1000 ? `${radius}m` : `${(radius/1000).toFixed(1)}km`}</span>
+        </div>
       </div>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
