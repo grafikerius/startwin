@@ -53,12 +53,14 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
     setHoroscopeOpen(true);
     setLoadingHoroscope(true);
     try {
+      const chart = calculateSigns(user.birth_date, user.birth_time);
+
       const res = await fetch('/api/horoscope', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: user.name,
-          sun_sign: user.sun_sign,
+          chart,
           mbti_type: user.mbti_type,
           lang
         })
