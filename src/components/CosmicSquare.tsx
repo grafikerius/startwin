@@ -353,7 +353,22 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
                 <p className="text-sm text-white/50 animate-pulse">Yıldızlar senin için okunuyor...</p>
               </div>
             ) : (
-              <p className="text-sm leading-relaxed text-white/90 italic mb-6">"{horoscopeText}"</p>
+              <div className="text-left text-sm leading-relaxed text-white/90 mb-6 max-h-[60vh] overflow-y-auto pr-2 pb-4 space-y-4">
+                {horoscopeText.split('\n').map((line, i) => {
+                  if (!line.trim()) return null;
+                  // Basit markdown kalinlaştırma (bold) parser
+                  const parts = line.split(/(\*\*.*?\*\*)/g);
+                  return (
+                    <p key={i} className="mb-2">
+                      {parts.map((part, j) => 
+                        part.startsWith('**') && part.endsWith('**') 
+                          ? <strong key={j} className="text-fuchsia-300 font-bold">{part.slice(2, -2)}</strong> 
+                          : part
+                      )}
+                    </p>
+                  );
+                })}
+              </div>
             )}
             <button 
               onClick={() => setHoroscopeOpen(false)}
