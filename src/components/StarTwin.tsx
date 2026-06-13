@@ -499,12 +499,63 @@ function BioForm({ t, lang, form, setForm, title }: { t: TT, lang: Lang, form: P
 }
 
 function VibeForm({ t, lang, form, setForm, mode, isPartner }: { t: TT, lang: Lang, form: ProfileForm, setForm: any, mode: Mode, isPartner: boolean }) {
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiText, setAiText] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+
   const set = (k: keyof ProfileForm, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
   const toggleField = (id: Field) =>
     setForm((f: any) => ({ ...f, fields: f.fields.includes(id) ? f.fields.filter((x: Field) => x !== id) : [...f.fields, id] }));
 
+  const findMbtiWithAI = async () => {
+    if (aiText.length < 5) return;
+    setAiLoading(true);
+    try {
+      const res = await fetch('/api/mbti', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: aiText, lang })
+      });
+      const data = await res.json();
+      if (data.success && data.mbti) {
+        set('mbti_type', data.mbti);
+        setAiModalOpen(false);
+        setAiText('');
+      } else {
+        alert(data.error || 'Hata oluştu.');
+      }
+    } catch (e) {
+      alert('Yapay zeka bağlantı hatası.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-5">
+      {aiModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm rounded-3xl border border-cyan-500/30 bg-[#0b0b1a] p-6 shadow-[0_0_40px_rgba(0,255,255,0.1)] animate-[fade_.2s_ease]">
+            <h3 className="text-lg font-black mb-2 text-cyan-300">Yapay Zeka ile Bul ✨</h3>
+            <p className="text-xs text-white/60 mb-4 leading-relaxed">
+              Kozmik Kahin'e kendini 2 cümle ile anlat. Kalabalıkta mı enerjik hissedersin yalnızken mi? Planlı mısındır yoksa anı mı yaşarsın?
+            </p>
+            <textarea
+              value={aiText}
+              onChange={e => setAiText(e.target.value)}
+              className="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white resize-none focus:outline-none focus:border-cyan-500"
+              placeholder="Örn: Ben yalnızlığı severim, genelde planlı yaşarım ama duygusallığım ağır basar..."
+            />
+            <div className="flex gap-2 mt-4">
+              <button onClick={() => setAiModalOpen(false)} className="flex-1 rounded-xl bg-white/10 py-2.5 font-bold hover:bg-white/20 transition">İptal</button>
+              <button onClick={findMbtiWithAI} disabled={aiLoading || aiText.length < 5} className="flex-1 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-500 py-2.5 font-bold disabled:opacity-50">
+                {aiLoading ? 'Analiz...' : 'Bul'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div>
         <p className="text-sm font-semibold text-white/85">{t.vibeTitle}</p>
         <p className="mb-3 text-xs text-white/45">{t.vibeHint}</p>
@@ -522,7 +573,12 @@ function VibeForm({ t, lang, form, setForm, mode, isPartner }: { t: TT, lang: La
       </div>
 
       <div>
-        <p className="text-sm font-semibold text-white/85">{t.mbtiTitle}</p>
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-sm font-semibold text-white/85">{t.mbtiTitle}</p>
+          <button onClick={() => setAiModalOpen(true)} className="text-[10px] bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 text-cyan-300 px-2 py-1 rounded-full flex items-center gap-1 hover:bg-cyan-500/30 transition">
+            ✨ Yapay Zeka Bul
+          </button>
+        </div>
         <p className="mb-3 text-xs text-white/45">{t.mbtiHint}</p>
         <div className="grid grid-cols-4 gap-1.5">
           {MBTI_TYPES.map((m) => (

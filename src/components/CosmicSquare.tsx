@@ -358,26 +358,32 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
               🔮 Günün Kozmik Falı
             </h3>
             {loadingHoroscope ? (
-              <div className="py-8 flex flex-col items-center gap-3">
-                <span className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-fuchsia-400" />
-                <p className="text-sm text-white/50 animate-pulse">Yıldızlar senin için okunuyor...</p>
+              <div className="flex flex-col items-center py-10 space-y-4">
+                <div className="w-8 h-8 border-4 border-fuchsia-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-white/60 text-sm animate-pulse">Yıldızların mesajı çözülüyor...</p>
               </div>
             ) : (
-              <div className="text-left text-sm leading-relaxed text-white/90 mb-6 max-h-[60vh] overflow-y-auto pr-2 pb-4 space-y-4">
-                {horoscopeText.split('\n').map((line, i) => {
-                  if (!line.trim()) return null;
-                  // Basit markdown kalinlaştırma (bold) parser
-                  const parts = line.split(/(\*\*.*?\*\*)/g);
-                  return (
-                    <p key={i} className="mb-2">
-                      {parts.map((part, j) => 
-                        part.startsWith('**') && part.endsWith('**') 
-                          ? <strong key={j} className="text-fuchsia-300 font-bold">{part.slice(2, -2)}</strong> 
-                          : part
-                      )}
-                    </p>
-                  );
-                })}
+              <div className="relative">
+                <div className="text-left text-sm leading-relaxed text-white/90 mb-6 max-h-[60vh] overflow-y-auto scrollbar-hide pb-4 space-y-4">
+                  {horoscopeText.split('\n').map((line, i) => {
+                    if (!line.trim()) return null;
+                    const parts = line.split(/(\*\*.*?\*\*)/g);
+                    return (
+                      <p key={i} className="mb-2">
+                        {parts.map((part, j) => 
+                          part.startsWith('**') && part.endsWith('**') 
+                            ? <strong key={j} className="text-fuchsia-300 font-bold block mt-4 mb-1 text-base">{part.slice(2, -2)}</strong> 
+                            : part
+                        )}
+                      </p>
+                    );
+                  })}
+                </div>
+                {horoscopeText && horoscopeText.length > 200 && (
+                  <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-[#0b0b1a] to-transparent flex justify-center items-end pointer-events-none">
+                    <span className="animate-bounce text-fuchsia-400 mb-1 text-xl">⬇️</span>
+                  </div>
+                )}
               </div>
             )}
             <button 
