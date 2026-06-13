@@ -76,6 +76,9 @@ export default defineConfig(({ mode }) => {
       commentApi(env),
       VitePWA({
         registerType: 'autoUpdate',
+        workbox: {
+          importScripts: ['/push-worker.js']
+        },
         manifest: {
           name: 'StarTwin',
           short_name: 'StarTwin',

@@ -311,6 +311,19 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
   const handleSendRequest = async () => {
     if (!selectedProfile || !userId || !supabase) return;
     await supabase.from('chat_requests').insert({ sender_id: userId, receiver_id: selectedProfile.id, status: 'pending' });
+    
+    // Trigger Push Notification
+    fetch('/api/send-push', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: selectedProfile.id,
+        title: 'Yeni Kozmik Sohbet İsteği',
+        body: 'Gizemli bir ruh seninle eşleşmek istiyor! Meydana dön ve kim olduğuna bak.',
+        url: '/'
+      })
+    }).catch(console.error);
+
     setSelectedProfile(null);
   };
 
@@ -398,8 +411,21 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
       <div className="p-4 border-b border-white/10 bg-black/40 backdrop-blur-md rounded-t-[2rem]">
         <div className="flex justify-between items-center mb-2 pr-16">
           <h2 className="font-black text-lg bg-gradient-to-r from-fuchsia-400 to-cyan-300 bg-clip-text text-transparent">Kozmik Meydan</h2>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-1.5 z-10">
             <button onClick={fetchHoroscope} className="text-[10px] px-3 py-1.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 hover:bg-fuchsia-500/30 transition font-bold border border-fuchsia-500/30">🔮 Falım</button>
+            <button 
+              onClick={async () => {
+                const { subscribeToPushNotifications } = await import('../lib/push');
+                const ok = await subscribeToPushNotifications(supabase, userId!);
+                if (ok) alert('Kozmik bildirimler aktif! Biri sana istek attığında telefonuna bildirim gelecek.');
+                else alert('Bildirim izni alınamadı veya tarayıcınız desteklemiyor.');
+              }} 
+              className="text-[12px] w-7 h-7 flex items-center justify-center rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition"
+              title="Bildirimleri Aç"
+            >
+              🔔
+            </button>
+            <button onClick={() => setLang(lang === 'tr' ? 'en' : 'tr')} className="text-[10px] w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 transition font-bold">{lang.toUpperCase()}</button>
             <button onClick={handleLogout} className="text-[10px] px-3 py-1.5 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 transition font-bold">Çıkış</button>
           </div>
         </div>
