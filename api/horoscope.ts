@@ -62,9 +62,9 @@ Your tone should be very professional, poetic, mystical, and impressive. Speak d
     let replyText = aiData?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!replyText) {
-       replyText = isTr 
-         ? "Yıldızlar bugün senin için çok parlak. İçindeki sese güven ve evrenin akışına bırak."
-         : "The stars shine brightly for you today. Trust your inner voice and go with the cosmic flow.";
+       const errMessage = aiData?.error?.message || "Unknown error";
+       const keyCheck = process.env.GEMINI_API_KEY ? "Key Exists" : "Key MISSING!";
+       replyText = `HATA: Gemini API yanıt vermedi. Detay: ${errMessage}. (API Anahtarı: ${keyCheck})`;
     }
 
     return res.status(200).json({ success: true, horoscope: replyText });

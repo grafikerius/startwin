@@ -72,6 +72,9 @@ Buna meydan sohbetine uygun, samimi bir cevap yaz. Eğer kullanıcı günlük bi
 
     // Gemini API bir hata verirse varsayılan samimi bir cevap ver
     if (!replyText) {
+       const errMessage = aiData?.error?.message || "Unknown error";
+       const keyCheck = process.env.GEMINI_API_KEY ? "Key Exists" : "Key MISSING!";
+       console.error("Gemini Error:", errMessage, "Key:", keyCheck);
        replyText = isBotA ? "Aa ne güzel söyledin! Sence de öyle değil mi? ✨" : "Kesinlikle katılıyorum sana dostum. Peki sen nasılsın? 🌌";
     }
 
