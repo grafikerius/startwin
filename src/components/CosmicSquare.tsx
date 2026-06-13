@@ -98,7 +98,11 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
         const { data } = await registerOrLogin(bioHash, savedPass, user.name || '');
         const result = data as unknown as { user_id: string, is_new: boolean, success: boolean }[];
         if (result && result.length > 0 && result[0].success) {
-          setUserId(result[0].user_id);
+          const uId = result[0].user_id as string;
+          setUserId(uId);
+          if (user.avatar_url) {
+            await supabase.from('profiles').update({ avatar_url: user.avatar_url }).eq('id', uId);
+          }
           setAuthStep('locating');
           return;
         }
@@ -137,10 +141,16 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
       return;
     }
 
-    setUserId(result[0].user_id);
-    localStorage.setItem('startwin_user_id', result[0].user_id);
+    const uId = result[0].user_id;
+    setUserId(uId);
+    localStorage.setItem('startwin_user_id', uId);
     localStorage.setItem('startwin_pass', password);
     localStorage.setItem('startwin_user', JSON.stringify(user));
+
+    if (user.avatar_url) {
+      await supabase.from('profiles').update({ avatar_url: user.avatar_url }).eq('id', uId);
+    }
+    
     setAuthStep('locating');
   };
 
@@ -407,9 +417,20 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
 
             return (
               <div key={m.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                <div onClick={() => !isMe && prof && setSelectedProfile(prof)} className="flex flex-col">
-                  {!isMe && <div className="text-[10px] text-white/60 mb-1">{anonName} {signEmoji} ~{dist}m</div>}
-                  <div className={`p-3 rounded-2xl ${isMe ? 'bg-fuchsia-600' : 'bg-white/10'}`}>{m.message_text}</div>
+                <div onClick={() => !isMe && prof && setSelectedProfile(prof)} className={`flex flex-col max-w-[85%] ${!isMe ? 'cursor-pointer' : ''}`}>
+                  {!isMe && (
+                    <div className="flex items-center gap-2 mb-1">
+                      {prof?.avatar_url ? (
+                        <div className="w-6 h-6 rounded-full overflow-hidden shrink-0">
+                          <img src={prof.avatar_url} className="w-full h-full object-cover blur-[6px] scale-125 brightness-75" alt="Gizemli Yüz" />
+                        </div>
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-white/10 shrink-0 flex items-center justify-center text-[10px]">👤</div>
+                      )}
+                      <span className="text-[10px] text-white/60">{anonName} {signEmoji} ~{dist}m</span>
+                    </div>
+                  )}
+                  <div className={`p-3 rounded-2xl ${isMe ? 'bg-fuchsia-600 rounded-tr-sm' : 'bg-white/10 rounded-tl-sm'} break-words`}>{m.message_text}</div>
                 </div>
               </div>
             );
@@ -443,6 +464,11 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="bg-[#0f0f1a] w-full max-w-sm rounded-3xl p-6 border border-white/10">
             <h3 className="text-xl font-bold">{selectedProfile.anonymous_name}</h3>
+            {selectedProfile.avatar_url && (
+              <div className="w-24 h-24 mx-auto my-4 rounded-full overflow-hidden border-2 border-fuchsia-500/30">
+                <img src={selectedProfile.avatar_url} className="w-full h-full object-cover blur-[12px] scale-125 brightness-75" alt="Gizemli Yüz" />
+              </div>
+            )}
             <p className="text-cyan-300 mt-2">Uyum: %{selectedProfile.matchScore}</p>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setSelectedProfile(null)} className="flex-1 py-3 rounded-xl bg-white/10">İptal</button>

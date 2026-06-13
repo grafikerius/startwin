@@ -47,6 +47,7 @@ export interface UserInput {
   match_gender?: Gender | 'any';
   moon_sign?: Sign;
   mbti_type?: string;
+  avatar_url?: string;
 }
 
 export interface SubScores {

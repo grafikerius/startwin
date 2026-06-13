@@ -98,7 +98,12 @@ export default function ChatRoom({ myId, partner, onBack }: { myId: string, part
         <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-white/10 text-white/70 transition">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         </button>
-        <div>
+        {partner.avatar_url && (
+          <div className="w-10 h-10 rounded-full overflow-hidden border border-fuchsia-500/50 shadow-[0_0_10px_rgba(255,0,255,0.2)]">
+            <img src={partner.avatar_url} className="w-full h-full object-cover" alt="Avatar" />
+          </div>
+        )}
+        <div className="flex flex-col">
           <h2 className="font-bold text-white flex items-center gap-2">
             {partner.anonymous_name}
             <span className="text-xs bg-fuchsia-500/20 text-fuchsia-300 px-2 py-0.5 rounded-full">

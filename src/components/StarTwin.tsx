@@ -408,12 +408,59 @@ function FieldWrap({ label, children }: { label: string; children: ReactNode }) 
 }
 
 function BioForm({ t, lang, form, setForm, title }: { t: TT, lang: Lang, form: ProfileForm, setForm: any, title: string }) {
+  const [avatarLoading, setAvatarLoading] = useState(false);
   const set = (k: keyof ProfileForm, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
   const sun = form.birth_date ? calculateSigns(form.birth_date, form.birth_time).sun : undefined;
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setAvatarLoading(true);
+    try {
+      const { supabase } = await import('../lib/supabase');
+      if (!supabase) throw new Error("Supabase is not connected");
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      set('avatar_url', data.publicUrl);
+    } catch (err) {
+      console.error('Avatar upload error:', err);
+      alert(lang === 'tr' ? 'Fotoğraf yüklenirken bir hata oluştu.' : 'Error uploading photo.');
+    } finally {
+      setAvatarLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
       <div className="text-center font-bold text-cyan-200 mb-2">{title}</div>
+      
+      <FieldWrap label={lang === 'tr' ? 'Profil Fotoğrafı (İsteğe Bağlı)' : 'Profile Photo (Optional)'}>
+        <div className="flex items-center gap-4">
+          {form.avatar_url ? (
+            <img src={form.avatar_url} alt="Avatar" className="w-12 h-12 rounded-full object-cover border-2 border-fuchsia-500" />
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-[10px] text-white/50 text-center leading-tight">
+              {lang === 'tr' ? 'Foto\nYok' : 'No\nPhoto'}
+            </div>
+          )}
+          <label className={`cursor-pointer border py-1.5 px-4 rounded-xl text-sm transition ${avatarLoading ? 'bg-fuchsia-500/10 border-fuchsia-500/20 text-fuchsia-300/50' : 'bg-fuchsia-500/20 border-fuchsia-400 text-fuchsia-300 hover:bg-fuchsia-500/30'}`}>
+            {avatarLoading ? (lang === 'tr' ? 'Yükleniyor...' : 'Loading...') : (lang === 'tr' ? 'Seç / Değiştir' : 'Select Photo')}
+            <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={avatarLoading} />
+          </label>
+        </div>
+      </FieldWrap>
+
       <FieldWrap label={t.name}>
         <input className={inputCls} placeholder={t.namePlaceholder} value={form.name ?? ''} onChange={(e) => set('name', e.target.value)} />
       </FieldWrap>
