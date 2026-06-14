@@ -88,7 +88,7 @@ Sohbetin geçmişini (varsa) göz önünde bulundurarak, bu son mesaja çok doğ
 1. Destan yazma! Cevapların çok kısa, öz ve akıcı olsun (En fazla 2-3 cümle).
 2. Kullanıcı hangi dilde yazdıysa, ona KESİNLİKLE aynı dilde cevap ver!`;
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
     
     const aiRes = await fetch(geminiUrl, {
       method: 'POST',

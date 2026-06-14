@@ -15,7 +15,7 @@ export default async function handler(req: any, res: any) {
       return res.status(400).json({ error: 'Image is required' });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
     // Base64 string'i mime type ve veriye ayır (data:image/jpeg;base64,...)
     const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);

@@ -496,10 +496,10 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
       )}
 
       <div className="p-4 border-b border-white/10 bg-black/40 backdrop-blur-md rounded-t-[2rem]">
-        <div className="flex justify-between items-center mb-2 pr-16">
+        <div className="flex justify-between items-center mb-3 pr-12">
           <h2 className="font-black text-lg bg-gradient-to-r from-fuchsia-400 to-cyan-300 bg-clip-text text-transparent">Kozmik Meydan</h2>
-          <div className="flex items-center gap-1.5 z-10">
-            <button onClick={fetchHoroscope} className="text-[10px] px-3 py-1.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 hover:bg-fuchsia-500/30 transition font-bold border border-fuchsia-500/30">🔮 Falım</button>
+          <div className="flex items-center gap-2 z-10">
+            <button onClick={fetchHoroscope} className="text-[11px] px-3 py-1.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 hover:bg-fuchsia-500/30 transition font-bold border border-fuchsia-500/30">🔮 Falım</button>
             <button 
               onClick={async () => {
                 const { subscribeToPushNotifications } = await import('../lib/push');
@@ -514,12 +514,11 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
             </button>
             <button 
               onClick={() => setShowPaywall(true)}
-              className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-bold rounded-full shadow-[0_0_15px_rgba(250,204,21,0.5)] flex items-center gap-1 hover:scale-105 transition text-[10px]"
+              className="px-3 py-1.5 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-bold rounded-full shadow-[0_0_15px_rgba(250,204,21,0.5)] flex items-center gap-1 hover:scale-105 transition text-[11px]"
             >
               👑 {isPremium ? 'VIP' : 'Premium'}
             </button>
-            <button onClick={() => setLang(lang === 'tr' ? 'en' : 'tr')} className="text-[10px] w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 transition font-bold">{lang.toUpperCase()}</button>
-            <button onClick={handleLogout} className="text-[10px] px-3 py-1.5 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 transition font-bold">Çıkış</button>
+            <button onClick={handleLogout} className="text-[11px] px-3 py-1.5 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 transition font-bold">Çıkış</button>
           </div>
         </div>
         <div className="flex items-center gap-3 text-xs pr-2">
