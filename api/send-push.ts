@@ -9,14 +9,18 @@ const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // VAPID keys setup
-const publicVapidKey = process.env.VITE_VAPID_PUBLIC_KEY || 'BAEX0MidCg9JhtlutTENYbBl1-uc4WA_ruX55ZA_YdUQQ-72RzjntrE-SVWhXZizMbIi-kS1K6XJyxr87mdx-84';
-const privateVapidKey = process.env.VAPID_PRIVATE_KEY || 'Bb8mmbTdcGCxc6oDW9Cv6qtvsTUTPG6xmtoyk0Zcu7w';
+const publicVapidKey = process.env.VITE_VAPID_PUBLIC_KEY;
+const privateVapidKey = process.env.VAPID_PRIVATE_KEY;
 
-webpush.setVapidDetails(
-  'mailto:support@startwin.app',
-  publicVapidKey,
-  privateVapidKey
-);
+if (!publicVapidKey || !privateVapidKey) {
+  console.error("VAPID keys are missing from environment variables!");
+} else {
+  webpush.setVapidDetails(
+    'mailto:support@startwin.app',
+    publicVapidKey,
+    privateVapidKey
+  );
+}
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
