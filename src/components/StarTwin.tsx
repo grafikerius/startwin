@@ -139,8 +139,6 @@ export default function StarTwin({ celebrities = CELEBRITIES }: { celebrities?: 
         if (u && u.name && u.birth_date && Array.isArray(u.fields)) {
           setNearbyUser(u);
           setUserProfile(u);
-          setMode('nearby');
-          setStep(4.5); 
         } else {
           localStorage.removeItem('startwin_user');
           localStorage.removeItem('startwin_pass');
@@ -324,7 +322,11 @@ export default function StarTwin({ celebrities = CELEBRITIES }: { celebrities?: 
                     <h3 className="text-lg font-bold text-white">{t.modeCustom}</h3>
                     <p className="mt-1 text-xs text-white/50">Sevgilin, kankan veya crush'ın ile uyumunu ölç.</p>
                   </button>
-                  <button onClick={() => { setMode('nearby'); setStep(1); }} className="rounded-2xl border border-fuchsia-500/50 bg-gradient-to-r from-fuchsia-600/20 to-cyan-500/20 p-5 text-left transition hover:brightness-125 shadow-[0_0_20px_-5px_rgba(255,0,255,0.4)]">
+                  <button onClick={() => { 
+                    setMode('nearby'); 
+                    if (nearbyUser) setStep(4.5);
+                    else setStep(1); 
+                  }} className="rounded-2xl border border-fuchsia-500/50 bg-gradient-to-r from-fuchsia-600/20 to-cyan-500/20 p-5 text-left transition hover:brightness-125 shadow-[0_0_20px_-5px_rgba(255,0,255,0.4)]">
                     <h3 className="text-lg font-black bg-gradient-to-r from-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">🌌 Yakınlardaki Kozmik Ruh Eşini Bul</h3>
                     <p className="mt-1 text-xs text-white/70">Çevrendeki en uyumlu profilleri haritada bul ve anonim sohbet et.</p>
                   </button>
