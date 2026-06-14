@@ -5,6 +5,8 @@ import { calculateEbced } from '../lib/ebced';
 import ChatRoom from './ChatRoom';
 import { KvkkModal, TermsModal } from './LegalModals';
 import { AdBanner, type AdSettings } from './AdBanner';
+import { shareAsImage } from '../lib/share';
+import { containsProfanity } from '../lib/badwords';
 import { getSystemSettings } from '../lib/supabase';
 
 const SIGN_EMOJIS: Record<string, string> = {
@@ -37,7 +39,7 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
   const [activeChatPartner, setActiveChatPartner] = useState<any | null>(null);
   const [selectedProfile, setSelectedProfile] = useState<any | null>(null);
   const [incomingRequests, setIncomingRequests] = useState<any[]>([]);
-  
+  const [activeChatIds, setActiveChatIds] = useState<Set<string>>(new Set());
   const [publicInput, setPublicInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   
@@ -263,15 +265,34 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
         { event: 'UPDATE', schema: 'public', table: 'chat_requests', filter: `sender_id=eq.${userId}` },
         (payload) => {
           if (payload.new.status === 'accepted') {
-             const partnerProf = nearbyProfiles[payload.new.receiver_id];
+             const newPartnerId = payload.new.receiver_id === userId ? payload.new.sender_id : payload.new.receiver_id;
+             setActiveChatIds(prev => new Set(prev).add(newPartnerId));
+             const partnerProf = nearbyProfiles[newPartnerId];
              if (partnerProf) setActiveChatPartner(partnerProf);
           }
         }
       )
       .subscribe();
 
-    supabase.from('chat_requests').select('*').eq('receiver_id', userId).eq('status', 'pending')
-      .then(({ data }) => { if (data) setIncomingRequests(data); });
+    const fetchIncomingRequests = async () => {
+        const { data } = await supabase!.from('chat_requests').select('*').eq('receiver_id', userId).eq('status', 'pending');
+        if (data) setIncomingRequests(data);
+    };
+
+    const fetchAcceptedChats = async () => {
+        const { data } = await supabase!.from('chat_requests')
+          .select('*')
+          .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+          .eq('status', 'accepted');
+        if (data) {
+          const ids = new Set<string>();
+          data.forEach(r => ids.add(r.sender_id === userId ? r.receiver_id : r.sender_id));
+          setActiveChatIds(ids);
+        }
+    };
+
+    fetchIncomingRequests();
+    fetchAcceptedChats();
 
     return () => { supabase.removeChannel(channel); supabase.removeChannel(reqChannel); };
   }, [authStep, userId, radius, nearbyProfiles, supabase]);
@@ -284,6 +305,13 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
     e.preventDefault();
     if (!publicInput.trim() || !userId || !supabase || !coords) return;
     const content = publicInput.trim();
+    
+    if (containsProfanity(content)) {
+      alert("Kozmik enerjiyi kirleten kelimeler kullanamazsın!");
+      setPublicInput('');
+      return;
+    }
+
     setPublicInput('');
 
     const tempMsg = {
@@ -330,6 +358,7 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
   const acceptRequest = async (req: any) => {
     await supabase!.from('chat_requests').update({ status: 'accepted' }).eq('id', req.id);
     setIncomingRequests(prev => prev.filter(r => r.id !== req.id));
+    setActiveChatIds(prev => new Set(prev).add(req.sender_id));
     const partnerProf = nearbyProfiles[req.sender_id];
     if (partnerProf) setActiveChatPartner(partnerProf);
   };
@@ -477,7 +506,14 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
 
             return (
               <div key={m.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                <div onClick={() => !isMe && prof && setSelectedProfile(prof)} className={`flex flex-col max-w-[85%] ${!isMe ? 'cursor-pointer' : ''}`}>
+                <div onClick={() => {
+                  if (isMe || !prof) return;
+                  if (activeChatIds.has(prof.id)) {
+                    setActiveChatPartner(prof);
+                  } else {
+                    setSelectedProfile(prof);
+                  }
+                }} className={`flex flex-col max-w-[85%] ${!isMe ? 'cursor-pointer' : ''}`}>
                   {!isMe && (
                     <div className="flex items-center gap-2 mb-1">
                       {prof?.avatar_url ? (

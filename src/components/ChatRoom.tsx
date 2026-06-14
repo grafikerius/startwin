@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
+import { containsProfanity } from '../lib/badwords';
 
 export default function ChatRoom({ myId, partner, onBack }: { myId: string, partner: any, onBack: () => void }) {
   const [messages, setMessages] = useState<any[]>([]);
@@ -81,6 +82,13 @@ export default function ChatRoom({ myId, partner, onBack }: { myId: string, part
     if (!input.trim() || !supabase) return;
     
     const msg = input.trim();
+
+    if (containsProfanity(msg)) {
+      alert("Kozmik enerjiyi kirleten kelimeler kullanamazsın!");
+      setInput('');
+      return;
+    }
+
     setInput('');
     
     // Optimistic UI update could be done here
