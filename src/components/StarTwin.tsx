@@ -317,7 +317,7 @@ export default function StarTwin({ celebrities = CELEBRITIES }: { celebrities?: 
         <LangToggle lang={lang} onChange={setLang} />
         
         {step < 5 ? (
-          <div className="relative h-full overflow-y-auto scrollbar-hide p-7 pt-12 pb-32">
+          <div className="relative flex-1 w-full overflow-y-auto scrollbar-hide p-7 pt-12 pb-32">
             <header className="mb-6 text-center">
               <h1 
                 onClick={handleLogoClick}
@@ -723,7 +723,7 @@ function Results({ t, lang, mode, user, partner, cocktail, topMatches, customMat
   };
 
   return (
-    <div className="relative h-full animate-[fade_.5s_ease] overflow-y-auto scrollbar-hide p-6 pb-32">
+    <div className="relative flex-1 w-full animate-[fade_.5s_ease] overflow-y-auto scrollbar-hide p-6 pb-32">
       <p className="text-center text-xs uppercase tracking-[0.3em] text-white/40">{mode === 'celebrity' ? t.cocktailLabel : t.customLabel}</p>
 
       {/* Paylaşılacak Alan */}
