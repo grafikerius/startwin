@@ -309,9 +309,9 @@ export default function StarTwin({ celebrities = CELEBRITIES }: { celebrities?: 
   };
 
   return (
-    <div className="min-h-[100dvh] w-full flex items-center justify-center bg-[#06060f] bg-[radial-gradient(60%_60%_at_50%_0%,#1b0b3a_0%,#06060f_60%)] p-4 font-sans text-white">
+    <div className="min-h-[100dvh] w-full flex items-center justify-center bg-[#06060f] bg-[radial-gradient(60%_60%_at_50%_0%,#1b0b3a_0%,#06060f_60%)] sm:p-4 font-sans text-white">
       <style>{'@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}'}</style>
-      <div className="relative w-full max-w-sm h-[calc(100dvh-2rem)] max-h-[800px] flex flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.03] shadow-[0_0_60px_-15px_rgba(124,92,255,0.6)] backdrop-blur-xl">
+      <div className="relative w-full max-w-sm h-[100dvh] sm:h-[calc(100dvh-2rem)] max-h-[850px] flex flex-col overflow-hidden sm:rounded-[2rem] border-x border-white/5 sm:border-white/10 bg-white/[0.03] sm:shadow-[0_0_60px_-15px_rgba(124,92,255,0.6)] backdrop-blur-xl">
         <Glow />
         <LangToggle lang={lang} onChange={setLang} />
         
@@ -722,7 +722,7 @@ function Results({ t, lang, mode, user, partner, cocktail, topMatches, customMat
   };
 
   return (
-    <div className="relative animate-[fade_.5s_ease] p-6 pt-12">
+    <div className="relative h-full animate-[fade_.5s_ease] overflow-y-auto scrollbar-hide p-6 pb-32">
       <p className="text-center text-xs uppercase tracking-[0.3em] text-white/40">{mode === 'celebrity' ? t.cocktailLabel : t.customLabel}</p>
 
       <div className="relative mt-4 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-fuchsia-600/30 via-violet-700/20 to-cyan-500/30 p-5 shadow-[0_0_50px_-12px_rgba(255,80,220,0.7)]">

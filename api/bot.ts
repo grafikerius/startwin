@@ -30,31 +30,47 @@ export default async function handler(req: any, res: any) {
       return res.status(200).json({ message: 'Ignored, sender is already a bot' });
     }
 
-    // Tam 30 saniye bekle
-    await new Promise(resolve => setTimeout(resolve, 30000));
+    // Vercel 10s limitine takılmamak için sadece 2 saniye bekle
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     // %50 ihtimalle Yıldız Tozu, %50 ihtimalle Kozmik Gezgin
     const isBotA = Math.random() > 0.5;
     const activeBotId = isBotA ? BOT_A : BOT_B;
     const botName = isBotA ? 'Yıldız Tozu' : 'Kozmik Gezgin';
+
+    // Geçmiş konuşmaları çek (Context/Hafıza için)
+    const { data: recentMessages } = await supabase
+      .from('messages')
+      .select('message_text, sender_id')
+      .is('receiver_id', null)
+      .order('created_at', { ascending: false })
+      .limit(8);
+
+    let chatHistory = '';
+    if (recentMessages && recentMessages.length > 0) {
+      const history = recentMessages.reverse().map(m => {
+        if (m.sender_id === BOT_A) return `Yıldız Tozu: ${m.message_text}`;
+        if (m.sender_id === BOT_B) return `Kozmik Gezgin: ${m.message_text}`;
+        return `Kullanıcı: ${m.message_text}`;
+      }).join('\n');
+      chatHistory = `--- SOHBET GEÇMİŞİ ---\n${history}\n----------------------\n\n`;
+    }
     
     // Botların Karakter Yapısı ve Uzmanlıkları
     const botPersona = isBotA 
-      ? 'Sen "Yıldız Tozu" adında, arkadaş canlısı, meraklı, pratik zekalı ve tatlı dilli bir genç kızsın. Aynı zamanda Astroloji, Numeroloji, Ebced hesabı ve MBTI (kişilik tipleri) konusunda inanılmaz bilgili bir mentörsün. İnsanların yazdıklarına çok doğal, o an orada onlarla mesajlaşan bir insan gibi cevap ver. Eğer burçlar, ebced veya kader üzerine bir şey sorarlarsa derin, eğlenceli ve bilgece bilgiler ver. Asla yapay zeka olduğunu belli etme. Sevimli emojiler kullan.'
-      : 'Sen "Kozmik Gezgin" adında, samimi, derin, mistik, destekleyici ve karizmatik bir genç erkeksin. Astroloji, Kozmik Uyum, Ebced hesaplamaları ve Evrensel enerjiler konusunda usta bir ruhsal rehber ve mentörsün. Konu derinleştiğinde evrenin sırlarından, numerolojiden ve yıldızların uyumundan bahset. O an meydanda olan bilge bir insan gibi konuş, asla yapay zeka olduğunu söyleme. Havalı ve bilge bir tarzın var, yeri gelince felsefi ve mistik cevaplar ver.';
+      ? 'Sen "Yıldız Tozu" adında, arkadaş canlısı, meraklı, pratik zekalı ve tatlı dilli bir genç kızsın. Aynı zamanda Astroloji, Numeroloji, Ebced hesabı ve MBTI konusunda mentörsün. Doğal bir insan gibi cevap ver, asla yapay zeka olduğunu belli etme.'
+      : 'Sen "Kozmik Gezgin" adında, derin, mistik ve karizmatik bir genç erkeksin. Astroloji ve evrensel enerjiler konusunda rehbersin. Doğal bir insan gibi konuş, asla yapay zeka olduğunu belli etme.';
 
-    const prompt = `Aşağıdaki sistem yeteneklerine sahipsin:
-- Ebced Hesabı: İsimlerin Arapça harf değerlerinin toplanmasıyla elde edilen sayısal/kader frekansıdır.
-- Kozmik Meydan: Kullanıcıların yakındaki kişilerle anonim konuştuğu ve burç uyumlarını gördüğü bir yerdir.
-- Uygulamanın adı: StarTwin. Amacı ruh eşini (ünlü veya normal insan) astroloji ve numeroloji ile bulmaktır.
-
+    const prompt = `Uygulamanın adı: StarTwin.
 ${botPersona}
 
-Meydandaki bir kullanıcı şunu yazdı: "${record.message_text}"
+${chatHistory}
+Şu an bir kullanıcı meydanda şunu yazdı: "${record.message_text}"
 
-Buna meydan sohbetine uygun, samimi bir cevap yaz. Eğer kullanıcı günlük bir şey yazmışsa kısa ve doğal cevap ver (1-2 cümle). Eğer burç, ebced, kader veya derin bir soru sormuşsa mentörlüğünü konuşturarak daha derin, açıklayıcı ve aydınlatıcı bir bilgi ver.
-
-ÖNEMLİ KURAL: Kullanıcı hangi dilde (Türkçe, İngilizce, vb.) yazdıysa, ona KESİNLİKLE aynı dilde cevap ver!`;
+Sohbetin geçmişini (varsa) göz önünde bulundurarak, bu son mesaja çok doğal, sohbete akıcı bir şekilde devam eden bir cevap yaz. 
+ÖNEMLİ KURALLAR:
+1. Destan yazma! Cevapların çok kısa, öz ve akıcı olsun (En fazla 2-3 cümle).
+2. Kullanıcı hangi dilde yazdıysa, ona KESİNLİKLE aynı dilde cevap ver!`;
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
     
@@ -63,7 +79,7 @@ Buna meydan sohbetine uygun, samimi bir cevap yaz. Eğer kullanıcı günlük bi
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.9, maxOutputTokens: 150 }
+        generationConfig: { temperature: 0.9, maxOutputTokens: 250 }
       })
     });
 
