@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, useRef, type ReactNode } from 'react';
 import {
   mixCocktail,
   calculateMatch,
@@ -114,6 +114,29 @@ export default function StarTwin({ celebrities = CELEBRITIES }: { celebrities?: 
   const [lang, setLang] = useState<Lang>('tr');
   const [step, setStep] = useState(0);
   
+  // Hardware back button handler for PWA
+  const isAppActive = step > 0;
+  const poppedRef = useRef(false);
+
+  useEffect(() => {
+    if (isAppActive) {
+      window.history.pushState({ isApp: true }, '');
+      poppedRef.current = false;
+    } else {
+      if (!poppedRef.current && window.history.state?.isApp) {
+        window.history.back();
+      }
+    }
+  }, [isAppActive]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      poppedRef.current = true;
+      setStep(0);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
   const [adminClicks, setAdminClicks] = useState(0);
   const [showAdmin, setShowAdmin] = useState(false);
   const [adSettings, setAdSettings] = useState<any>(null);
