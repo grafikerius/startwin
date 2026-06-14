@@ -1,7 +1,3 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
@@ -26,9 +22,19 @@ Do not add any explanations or quotes, ONLY return the translated text.
 Text to translate:
 "${text}"`;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(prompt);
-    let translatedText = result.response.text().trim();
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    
+    const aiRes = await fetch(geminiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.1 }
+      })
+    });
+
+    const aiData = await aiRes.json();
+    let translatedText = aiData?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || text;
 
     return res.status(200).json({ translatedText });
   } catch (error: any) {

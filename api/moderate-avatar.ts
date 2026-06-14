@@ -1,7 +1,4 @@
 // api/moderate-avatar.ts
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
@@ -15,8 +12,6 @@ export default async function handler(req: any, res: any) {
       return res.status(400).json({ error: 'Image is required' });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    
     // Base64 string'i mime type ve veriye ayır (data:image/jpeg;base64,...)
     const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
     if (!matches || matches.length !== 3) {
@@ -39,17 +34,25 @@ Reply ONLY with a valid JSON object in this exact format:
   "reason": "Explain briefly in Turkish why it is unsafe, or leave empty if safe"
 }`;
 
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          data: data,
-          mimeType: mimeType
-        }
-      }
-    ]);
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    
+    const aiRes = await fetch(geminiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ 
+          parts: [
+            { text: prompt },
+            { inlineData: { data: data, mimeType: mimeType } }
+          ] 
+        }],
+        generationConfig: { temperature: 0.1 }
+      })
+    });
 
-    const responseText = result.response.text().trim();
+    const aiData = await aiRes.json();
+    const responseText = aiData?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '{"isSafe":false,"reason":"Analysis failed"}';
+
     // Gemini bazen markdown kodu içinde dönebilir (```json ... ```)
     let cleanedText = responseText;
     if (cleanedText.startsWith('```json')) {
@@ -63,8 +66,6 @@ Reply ONLY with a valid JSON object in this exact format:
     return res.status(200).json(jsonResult);
   } catch (error: any) {
     console.error('Avatar moderation error:', error);
-    // Hata durumunda varsayılan olarak safe kabul etmeyip kullanıcı deneyimini bozmamak için safe dönebiliriz 
-    // ama güvenlik önemliyse false dönmek daha iyidir.
     return res.status(500).json({ isSafe: false, reason: 'Yapay zeka analiz servisi şu an meşgul.' });
   }
 }
