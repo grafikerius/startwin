@@ -314,6 +314,7 @@ export default function StarTwin({ celebrities = CELEBRITIES }: { celebrities?: 
       <style>{'@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}'}</style>
       <div className="relative w-full max-w-sm h-[100dvh] sm:h-[calc(100dvh-2rem)] max-h-[850px] flex flex-col overflow-hidden sm:rounded-[2rem] border-x border-white/5 sm:border-white/10 bg-white/[0.03] sm:shadow-[0_0_60px_-15px_rgba(124,92,255,0.6)] backdrop-blur-xl">
         <Glow />
+        <InstallAppButton />
         <LangToggle lang={lang} onChange={setLang} />
         
         {step < 5 ? (
@@ -405,6 +406,37 @@ function Glow() {
       <div className="pointer-events-none absolute -top-24 -left-16 h-56 w-56 rounded-full bg-fuchsia-500/30 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 -right-16 h-56 w-56 rounded-full bg-cyan-400/30 blur-3xl" />
     </>
+  );
+}
+
+function InstallAppButton() {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  if (!deferredPrompt) return null;
+
+  return (
+    <button 
+      onClick={async () => {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          setDeferredPrompt(null);
+        }
+      }}
+      className="absolute left-4 top-4 z-10 flex items-center gap-1.5 rounded-full border border-fuchsia-500/50 bg-fuchsia-500/20 px-3 py-1 text-[11px] font-bold text-fuchsia-200 backdrop-blur transition hover:bg-fuchsia-500/30 animate-pulse"
+    >
+      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+      Uygulamayı İndir
+    </button>
   );
 }
 
