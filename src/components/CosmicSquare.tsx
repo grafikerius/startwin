@@ -42,6 +42,7 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
   const [incomingRequests, setIncomingRequests] = useState<any[]>([]);
   const [activeChatIds, setActiveChatIds] = useState<Set<string>>(new Set());
   const [publicInput, setPublicInput] = useState('');
+  const [replyingTo, setReplyingTo] = useState<{ senderName: string, text: string } | null>(null);
   const [isPremium, setIsPremium] = useState(false);
   const [dailyRequestCount, setDailyRequestCount] = useState(0);
   const [showPaywall, setShowPaywall] = useState(false);
@@ -317,20 +318,29 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
   const sendPublicMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!publicInput.trim() || !userId || !supabase || !coords) return;
-    const content = publicInput.trim();
     
-    if (containsProfanity(content)) {
+    // Alıntı formatı: [REPLY:SenderName:::MessageText]GerçekMesaj
+    let finalContent = publicInput.trim();
+    if (replyingTo) {
+      // Clean up the reply text to prevent injection of fake replies
+      const cleanReplyText = replyingTo.text.replace(/\[REPLY:.*?\]/g, '').substring(0, 50);
+      finalContent = `[REPLY:${replyingTo.senderName}:::${cleanReplyText}]${finalContent}`;
+    }
+
+    if (containsProfanity(finalContent)) {
       alert("Kozmik enerjiyi kirleten kelimeler kullanamazsın!");
       setPublicInput('');
+      setReplyingTo(null);
       return;
     }
 
     setPublicInput('');
+    setReplyingTo(null);
 
     const tempMsg = {
       id: crypto.randomUUID(),
       sender_id: userId,
-      message_text: content,
+      message_text: finalContent,
       created_at: new Date().toISOString(),
       delivery_distance: 0,
       receiver_id: null
@@ -340,7 +350,7 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
     const pointStr = `POINT(${coords.lng} ${coords.lat})`;
     const { error } = await supabase.from('messages').insert({
       sender_id: userId,
-      message_text: content,
+      message_text: finalContent,
       sender_location: pointStr
     });
     
@@ -525,10 +535,25 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
         ) : (
           messages.map(m => {
             const isMe = m.sender_id === userId;
-            const prof = nearbyProfiles[m.sender_id];
+            const localUser = JSON.parse(localStorage.getItem('startwin_user') || '{}');
+            const prof = isMe ? localUser : (m.sender_anonymous_name ? { anonymous_name: m.sender_anonymous_name } : nearbyProfiles[m.sender_id]);
             const anonName = prof?.anonymous_name || 'Gizemli Ruh';
             const signEmoji = prof?.sun_sign ? SIGN_EMOJIS[prof.sun_sign] : '✨';
             const dist = m.delivery_distance ? Math.max(1, Math.round(m.delivery_distance) + (Math.floor(Math.random() * 41) - 20)) : '?';
+
+            // Alıntı ayrıştırma
+            let isReply = false;
+            let replySender = '';
+            let replyText = '';
+            let displayMessage = m.message_text;
+            
+            const replyMatch = displayMessage.match(/^\[REPLY:(.*?):::(.*?)\](.*)$/s);
+            if (replyMatch) {
+              isReply = true;
+              replySender = replyMatch[1];
+              replyText = replyMatch[2];
+              displayMessage = replyMatch[3];
+            }
 
             return (
               <div key={m.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
@@ -552,7 +577,27 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
                       <span className="text-[10px] text-white/60">{anonName} {signEmoji} ~{dist}m</span>
                     </div>
                   )}
-                  <div className={`p-3 rounded-2xl ${isMe ? 'bg-fuchsia-600 rounded-tr-sm' : 'bg-white/10 rounded-tl-sm'} break-words`}>{m.message_text}</div>
+                  <div className={`p-3 rounded-2xl ${isMe ? 'bg-gradient-to-r from-fuchsia-600 to-cyan-500 rounded-tr-sm' : 'bg-white/10 rounded-tl-sm border border-white/5'} shadow-lg break-words max-w-full relative group`}>
+                    
+                    {isReply && (
+                      <div className="mb-2 p-2 bg-black/20 rounded border-l-2 border-fuchsia-400 text-xs text-white/70">
+                        <span className="font-bold text-fuchsia-300">{replySender}</span>
+                        <p className="truncate">{replyText}</p>
+                      </div>
+                    )}
+                    
+                    <p className="text-sm">{displayMessage}</p>
+                    
+                    {!isMe && prof?.anonymous_name && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setReplyingTo({ senderName: prof.anonymous_name, text: displayMessage }); }}
+                        className="absolute -right-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition p-1 bg-white/10 rounded-full hover:bg-white/20"
+                        title="Yanıtla"
+                      >
+                        ↩️
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -560,7 +605,16 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
         )}
       </div>
 
-      <div className="p-4 bg-white/5 border-t border-white/10 rounded-b-[2rem]">
+      <div className="p-4 bg-white/5 border-t border-white/10 rounded-b-[2rem] flex flex-col">
+        {replyingTo && (
+          <div className="flex items-center justify-between bg-black/40 p-2 rounded-t-xl border-l-2 border-fuchsia-400 mb-1 text-xs">
+            <div className="truncate flex-1">
+              <span className="text-fuchsia-300 font-bold mr-2">{replyingTo.senderName}:</span>
+              <span className="text-white/60">{replyingTo.text}</span>
+            </div>
+            <button onClick={() => setReplyingTo(null)} className="ml-2 text-white/50 hover:text-white">✕</button>
+          </div>
+        )}
         <form onSubmit={sendPublicMessage} className="flex gap-2">
           <input type="text" value={publicInput} onChange={(e) => setPublicInput(e.target.value)} placeholder="Meydana fısılda..." className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-2.5" />
           <button type="submit" className="bg-gradient-to-r from-fuchsia-500 to-cyan-400 w-10 h-10 rounded-full">➤</button>
