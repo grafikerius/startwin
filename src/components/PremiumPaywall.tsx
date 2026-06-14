@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 interface PremiumPaywallProps {
   onClose: () => void;
   onSubscribe: () => void;
+  lang?: string;
 }
 
-export default function PremiumPaywall({ onClose, onSubscribe }: PremiumPaywallProps) {
+export default function PremiumPaywall({ onClose, onSubscribe, lang = 'tr' }: PremiumPaywallProps) {
   const [loading, setLoading] = useState(false);
 
   const handleCheckout = () => {

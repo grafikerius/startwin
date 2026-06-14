@@ -308,7 +308,7 @@ export default function StarTwin({ celebrities = CELEBRITIES }: { celebrities?: 
         fame: 0,
         mbti_type: p.mbti_type,
       };
-      setCustomMatch(calculateMatch(u, c).result);
+      setCustomMatch(calculateMatch(u, c));
     }
     setTimeout(() => {
       setCalculating(false);
@@ -365,7 +365,7 @@ export default function StarTwin({ celebrities = CELEBRITIES }: { celebrities?: 
                 </div>
               )}
 
-              {step === 1 && <BioForm t={t} lang={lang} form={userProfile} setForm={setUserProfile} title={t.name} />}
+              {step === 1 && <BioForm t={t} lang={lang} form={userProfile} setForm={setUserProfile} title={t.nameTitle} />}
               {step === 2 && <VibeForm t={t} lang={lang} form={userProfile} setForm={setUserProfile} mode={mode} isPartner={false} />}
               
               {step === 3 && <BioForm t={t} lang={lang} form={partnerProfile} setForm={setPartnerProfile} title={t.partnerBio} />}
@@ -757,18 +757,20 @@ function Results({ t, lang, mode, user, partner, cocktail, topMatches, customMat
   if (mode === 'celebrity' && !topCeleb) return null;
   if (mode === 'custom' && !customMatch) return null;
 
-  const matchData = mode === 'celebrity' ? topCeleb.result : customMatch;
-  const topName = mode === 'celebrity' ? nm(topCeleb.celebrity) : (partner?.name || 'Partner');
+  const matchData = mode === 'celebrity' ? topCeleb!.result : customMatch;
+  const topName = mode === 'celebrity' ? nm(topCeleb!.celebrity) : (partner?.name || 'Partner');
   const userChart = calculateSigns(user.birth_date, user.birth_time, user.lat, user.lon);
-  const partnerChart = mode === 'celebrity' ? { sun: topCeleb.celebrity.sun_sign } : calculateSigns(partner!.birth_date, partner!.birth_time, partner!.lat, partner!.lon);
+  const partnerChart: any = mode === 'celebrity' ? { sun: topCeleb!.celebrity.sun_sign } : calculateSigns(partner!.birth_date, partner!.birth_time, partner!.lat, partner!.lon);
   const topSign = partnerChart.sun;
-  const topBirth = mode === 'celebrity' ? topCeleb.celebrity.birth_date : partner!.birth_date;
-  const topFields = mode === 'celebrity' ? topCeleb.celebrity.fields : partner!.fields;
-  const imageUrl = mode === 'celebrity' ? topCeleb.celebrity.image_url : undefined;
+  const topBirth = mode === 'celebrity' ? topCeleb!.celebrity.birth_date : partner!.birth_date;
+  const topFields = mode === 'celebrity' ? topCeleb!.celebrity.fields : partner!.fields;
+  const imageUrl = mode === 'celebrity' ? topCeleb!.celebrity.image_url : undefined;
 
   const userEbcedVal = calculateEbced(user.name || '');
   const partnerEbcedVal = mode === 'custom' && partner?.name ? calculateEbced(partner.name) : undefined;
   const ebcedInfo = getEbcedInterpretation(userEbcedVal, partnerEbcedVal);
+
+  const [sharing, setSharing] = useState(false);
 
   const share = async () => {
     setSharing(true);

@@ -223,7 +223,7 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
              const matchRes = calculateMatch(user, partnerInput);
              const jitter = Math.floor(Math.random() * 41) - 20;
              let finalDist = Math.max(1, Math.round(n.distance_meters) + jitter);
-             profMap[n.id] = { ...n, matchScore: Math.round(matchRes.score), distance_meters: finalDist };
+             profMap[n.id] = { ...n, matchScore: Math.round(matchRes.overall), distance_meters: finalDist };
           });
           setNearbyProfiles(profMap);
         }
@@ -559,7 +559,7 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
           messages.map(m => {
             const isMe = m.sender_id === userId;
             const localUser = JSON.parse(localStorage.getItem('startwin_user') || '{}');
-            const prof = isMe ? localUser : (m.sender_anonymous_name ? { anonymous_name: m.sender_anonymous_name } : nearbyProfiles[m.sender_id]);
+            const prof = isMe ? localUser : (nearbyProfiles[m.sender_id] || { anonymous_name: (m as any).sender_anonymous_name });
             const anonName = prof?.anonymous_name || (lang === 'tr' ? 'Gizemli Ruh' : 'Mysterious Soul');
             const signEmoji = prof?.sun_sign ? SIGN_EMOJIS[prof.sun_sign] : '✨';
             const dist = m.delivery_distance ? Math.max(1, Math.round(m.delivery_distance) + (Math.floor(Math.random() * 41) - 20)) : '?';

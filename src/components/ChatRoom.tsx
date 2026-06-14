@@ -92,9 +92,6 @@ export default function ChatRoom({ myId, partner, onBack }: { myId: string, part
       receiver_id: partner.id,
       message_text: msg
     });
-    
-    const { sendPushNotification } = await import('../lib/push');
-    sendPushNotification(partner.id, 'Yeni Özel Mesaj', lang === 'tr' ? `${partner.anonymous_name || 'Biri'} sana özel bir mesaj gönderdi.` : `${partner.anonymous_name || 'Someone'} sent you a private message.`, `/?chat=${myId}`);
   };
 
   const handleTranslate = async (msgId: string, textToTranslate: string) => {
