@@ -478,6 +478,29 @@ function BioForm({ t, lang, form, setForm, title }: { t: TT, lang: Lang, form: P
     try {
       const { supabase } = await import('../lib/supabase');
       if (!supabase) throw new Error("Supabase is not connected");
+
+      // Yapay Zeka (Gemini) ile Fotoğraf Moderasyonu
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
+      });
+
+      const modRes = await fetch('/api/moderate-avatar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64 })
+      });
+      
+      if (modRes.ok) {
+        const modData = await modRes.json();
+        if (modData && modData.isSafe === false) {
+          alert(modData.reason || (lang === 'tr' ? 'Fotoğraf güvenlik politikalarımıza uymuyor (Çıplaklık/Şiddet).' : 'Photo violates safety policies.'));
+          setAvatarLoading(false);
+          return;
+        }
+      }
       
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;

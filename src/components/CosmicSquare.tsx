@@ -5,6 +5,7 @@ import { calculateEbced } from '../lib/ebced';
 import ChatRoom from './ChatRoom';
 import { KvkkModal, TermsModal } from './LegalModals';
 import { AdBanner, type AdSettings } from './AdBanner';
+import PremiumPaywall from './PremiumPaywall';
 import { shareAsImage } from '../lib/share';
 import { containsProfanity } from '../lib/badwords';
 import { getSystemSettings } from '../lib/supabase';
@@ -41,6 +42,9 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
   const [incomingRequests, setIncomingRequests] = useState<any[]>([]);
   const [activeChatIds, setActiveChatIds] = useState<Set<string>>(new Set());
   const [publicInput, setPublicInput] = useState('');
+  const [isPremium, setIsPremium] = useState(false);
+  const [dailyRequestCount, setDailyRequestCount] = useState(0);
+  const [showPaywall, setShowPaywall] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const [showKvkk, setShowKvkk] = useState(false);
@@ -95,6 +99,14 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
     const checkProfile = async () => {
       if (!supabase) return;
       
+      const checkUserLimits = async (uId: string) => {
+        const { data: prof } = await supabase.from('profiles').select('is_premium').eq('id', uId).single();
+        if (prof?.is_premium) setIsPremium(true);
+        
+        const { data: reqCount } = await supabase.rpc('get_daily_chat_request_count', { p_user_id: uId });
+        setDailyRequestCount(reqCount || 0);
+      };
+
       const savedPass = localStorage.getItem('startwin_pass');
       if (savedPass) {
         const { data } = await registerOrLogin(bioHash, savedPass, user.name || '');
@@ -102,6 +114,7 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
         if (result && result.length > 0 && result[0].success) {
           const uId = result[0].user_id as string;
           setUserId(uId);
+          await checkUserLimits(uId);
           if (user.avatar_url) {
             await supabase.from('profiles').update({ avatar_url: user.avatar_url }).eq('id', uId);
           }
@@ -241,7 +254,7 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
           
           setMessages(prev => {
              if (prev.find(m => m.id === msgData.id)) return prev;
-             return [...prev, { ...msgData, delivery_distance: delivery.distance_meters }];
+             return [...prev, { ...msgData, delivery_distance: delivery.delivery_distance || delivery.distance_meters }];
           });
         }
       )
@@ -338,8 +351,15 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
 
   const handleSendRequest = async () => {
     if (!selectedProfile || !userId || !supabase) return;
+
+    if (!isPremium && dailyRequestCount >= 3) {
+      setShowPaywall(true);
+      return;
+    }
+
     await supabase.from('chat_requests').insert({ sender_id: userId, receiver_id: selectedProfile.id, status: 'pending' });
     
+    setDailyRequestCount(prev => prev + 1);
     // Trigger Push Notification
     fetch('/api/send-push', {
       method: 'POST',
@@ -482,6 +502,12 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
             >
               🔔
             </button>
+            <button 
+              onClick={() => setShowPaywall(true)}
+              className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-bold rounded-full shadow-[0_0_15px_rgba(250,204,21,0.5)] flex items-center gap-1 hover:scale-105 transition text-[10px]"
+            >
+              👑 {isPremium ? 'VIP' : 'Premium'}
+            </button>
             <button onClick={() => setLang(lang === 'tr' ? 'en' : 'tr')} className="text-[10px] w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 transition font-bold">{lang.toUpperCase()}</button>
             <button onClick={handleLogout} className="text-[10px] px-3 py-1.5 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 transition font-bold">Çıkış</button>
           </div>
@@ -554,6 +580,19 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
              )
           })}
         </div>
+      )}
+
+      {/* Premium Paywall Modal */}
+      {showPaywall && (
+        <PremiumPaywall 
+          onClose={() => setShowPaywall(false)} 
+          onSubscribe={async () => {
+            setIsPremium(true);
+            if (userId && supabase) {
+              await supabase.from('profiles').update({ is_premium: true }).eq('id', userId);
+            }
+          }} 
+        />
       )}
 
       {selectedProfile && (
