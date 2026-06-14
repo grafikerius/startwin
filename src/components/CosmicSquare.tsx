@@ -520,10 +520,16 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
       )}
 
       <div className="p-4 border-b border-white/10 bg-black/40 backdrop-blur-md rounded-t-[2rem]">
-        <div className="flex justify-between items-center mb-3 pr-12">
+        <div className="flex justify-between items-center mb-3 pr-2">
           <h2 className="font-black text-lg bg-gradient-to-r from-fuchsia-400 to-cyan-300 bg-clip-text text-transparent">{lang === 'tr' ? 'Kozmik Meydan' : 'Cosmic Square'}</h2>
-          <div className="flex items-center gap-2 z-10">
-            <button onClick={fetchHoroscope} className="text-[11px] px-3 py-1.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 hover:bg-fuchsia-500/30 transition font-bold border border-fuchsia-500/30">🔮 {lang === 'tr' ? 'Falım' : 'My Oracle'}</button>
+          
+          <div className="flex items-center gap-1.5 p-1.5 bg-black/40 border border-white/10 backdrop-blur-xl rounded-full shadow-[0_0_20px_rgba(192,38,211,0.15)] z-10">
+            <button onClick={fetchHoroscope} className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-fuchsia-500/20 to-fuchsia-600/20 text-fuchsia-300 hover:from-fuchsia-500/40 hover:to-fuchsia-600/40 transition font-bold shadow-[inset_0_1px_rgba(255,255,255,0.1)] border border-fuchsia-500/30 group" title={lang === 'tr' ? 'Falım' : 'My Oracle'}>
+              <span className="text-sm group-hover:scale-110 transition-transform">🔮</span>
+            </button>
+            
+            <div className="w-[1px] h-4 bg-white/10 mx-0.5"></div>
+            
             <button 
               onClick={async () => {
                 const { subscribeToPushNotifications } = await import('../lib/push');
@@ -531,18 +537,28 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
                 if (ok) alert(lang === 'tr' ? 'Kozmik bildirimler aktif! Biri sana istek attığında telefonuna bildirim gelecek.' : 'Cosmic notifications active! You will get a notification when someone sends a request.');
                 else alert(lang === 'tr' ? 'Bildirim izni alınamadı veya tarayıcınız desteklemiyor.' : 'Notification permission denied or not supported by your browser.');
               }} 
-              className="text-[12px] w-7 h-7 flex items-center justify-center rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition"
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition text-blue-300 relative group"
               title={lang === 'tr' ? 'Bildirimleri Aç' : 'Enable Notifications'}
             >
-              🔔
+              <span className="text-sm drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] group-hover:scale-110 transition-transform">🔔</span>
+              <div className="absolute -inset-1 bg-blue-500/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition duration-500"></div>
             </button>
+            
+            <div className="w-[1px] h-4 bg-white/10 mx-0.5"></div>
+            
             <button 
               onClick={() => setShowPaywall(true)}
-              className="px-3 py-1.5 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-bold rounded-full shadow-[0_0_15px_rgba(250,204,21,0.5)] flex items-center gap-1 hover:scale-105 transition text-[11px]"
+              className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-yellow-500/20 to-amber-600/20 text-yellow-300 border border-yellow-500/30 hover:from-yellow-500/40 hover:to-amber-600/40 transition font-bold relative group"
+              title={isPremium ? 'VIP' : 'Premium'}
             >
-              👑 {isPremium ? 'VIP' : 'Premium'}
+              <span className="text-sm drop-shadow-[0_0_8px_rgba(234,179,8,0.5)] group-hover:scale-110 transition-transform">👑</span>
             </button>
-            <button onClick={handleLogout} className="text-[11px] px-3 py-1.5 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 transition font-bold">{lang === 'tr' ? 'Çıkış' : 'Logout'}</button>
+
+            <div className="w-[1px] h-4 bg-white/10 mx-0.5"></div>
+            
+            <button onClick={handleLogout} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-500/20 transition text-red-400 group" title={lang === 'tr' ? 'Çıkış' : 'Logout'}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-transform"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </button>
           </div>
         </div>
         <div className="flex items-center gap-3 text-xs pr-2">

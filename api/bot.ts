@@ -11,6 +11,9 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const BOT_A = 'a0000000-0000-0000-0000-00000000000a'; // Yıldız Tozu (Female)
 const BOT_B = 'b0000000-0000-0000-0000-00000000000b'; // Kozmik Gezgin (Male)
 
+// Duplicate önleme için in-memory cache
+const processedMessageIds = new Set<string>();
+
 export default async function handler(req: any, res: any) {
   // Sadece POST isteklerine izin ver
   if (req.method !== 'POST') {
@@ -21,17 +24,23 @@ export default async function handler(req: any, res: any) {
     const payload = req.body;
     const record = payload?.record;
 
-    if (!record || !record.message_text) {
+    if (!record || !record.message_text || !record.id) {
       return res.status(400).json({ error: 'No record found in webhook payload' });
+    }
+
+    // Mesaj daha önce işlendi mi? (Supabase webhook retry önlemi)
+    if (processedMessageIds.has(record.id)) {
+      return res.status(200).json({ message: 'Duplicate webhook ignored' });
+    }
+    processedMessageIds.add(record.id);
+    if (processedMessageIds.size > 500) {
+      processedMessageIds.clear(); // belleği temizle
     }
 
     // Mesajın botun kendisinden gelip gelmediğini kontrol et
     if (record.sender_id === BOT_A || record.sender_id === BOT_B) {
       return res.status(200).json({ message: 'Ignored, sender is already a bot' });
     }
-
-    // Vercel 10s limitine takılmamak için sadece 2 saniye bekle
-    await new Promise(resolve => setTimeout(resolve, 2000));
 
     // %50 ihtimalle Yıldız Tozu, %50 ihtimalle Kozmik Gezgin
     const isBotA = Math.random() > 0.5;
