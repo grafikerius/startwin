@@ -815,6 +815,10 @@ function Results({ t, lang, mode, user, partner, cocktail, topMatches, customMat
         </div>
 
         {ebcedInfo.title && (
+          <div className="mt-3 rounded-xl bg-white/5 p-3 text-center border border-white/10">
+            <h4 className="text-sm font-bold text-cyan-300">{ebcedInfo.title}</h4>
+            <p className="mt-1 text-xs text-white/70 leading-relaxed">
+              {ebcedInfo.desc}
             </p>
           </div>
         )}
