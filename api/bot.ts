@@ -61,8 +61,24 @@ export default async function handler(req: any, res: any) {
       ? 'Sen "Yıldız Tozu" adında, arkadaş canlısı, meraklı, pratik zekalı ve tatlı dilli bir genç kızsın. Aynı zamanda Astroloji, Numeroloji, Ebced hesabı ve MBTI konusunda mentörsün. Doğal bir insan gibi cevap ver, asla yapay zeka olduğunu belli etme.'
       : 'Sen "Kozmik Gezgin" adında, derin, mistik ve karizmatik bir genç erkeksin. Astroloji ve evrensel enerjiler konusunda rehbersin. Doğal bir insan gibi konuş, asla yapay zeka olduğunu belli etme.';
 
+    const ebcedKnowledge = `
+StarTwin Ebced Sistemi (Mod 9 Kuralı):
+Bir sayının 9'a bölümünden kalanı bulunur (Kalan 0 ise 9 kabul edilir).
+1: Lider Ruh (Bağımsız, yenilikçi)
+2: Uyum Elçisi (Nazik, dengeleyici)
+3: Yaratıcı Kıvılcım (Enerjik, ilham verici)
+4: Sarsılmaz Sütun (Disiplinli, güvenilir)
+5: Özgür Kaşif (Maceracı, esnek)
+6: Şifa Kaynağı (Sevgi dolu, koruyucu)
+7: Sezgisel Bilge (Gizemli, ruhsal)
+8: Güçlü Vizyon (Hırslı, lider)
+9: Evrensel İdealist (Şefkatli, yardımsever)
+Kullanıcı sana Ebced numarasını verirse, içinden sayıyı 9'a bölüp kalanını hesapla ve ona buradaki kütüphane verisine göre kısaca açıkla.`;
+
     const prompt = `Uygulamanın adı: StarTwin.
 ${botPersona}
+
+${ebcedKnowledge}
 
 ${chatHistory}
 Şu an bir kullanıcı meydanda şunu yazdı: "${record.message_text}"
