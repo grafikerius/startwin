@@ -112,7 +112,14 @@ const EMPTY_PROFILE: ProfileForm = { gender: 'female', height: 170, weight: 65, 
 export type TopMatchSlice = CocktailSlice & { wiki: WikiSummary };
 
 export default function StarTwin({ celebrities = CELEBRITIES }: { celebrities?: Celebrity[] }) {
-  const [lang, setLang] = useState<Lang>('tr');
+  const [lang, setLangState] = useState<Lang>(() => {
+    return (localStorage.getItem('startwin_lang') as Lang) || 'tr';
+  });
+  
+  const setLang = (newLang: Lang) => {
+    setLangState(newLang);
+    localStorage.setItem('startwin_lang', newLang);
+  };
   const [step, setStep] = useState(0);
   
   // Hardware back button handler for PWA

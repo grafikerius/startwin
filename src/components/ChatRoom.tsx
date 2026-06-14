@@ -2,8 +2,10 @@ import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
 export default function ChatRoom({ myId, partner, onBack }: { myId: string, partner: any, onBack: () => void }) {
+  const lang = localStorage.getItem('startwin_lang') || 'tr';
   const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState('');
+  const [translatedMessages, setTranslatedMessages] = useState<Record<string, { text?: string, loading?: boolean }>>({});
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -90,6 +92,29 @@ export default function ChatRoom({ myId, partner, onBack }: { myId: string, part
       receiver_id: partner.id,
       message_text: msg
     });
+    
+    const { sendPushNotification } = await import('../lib/push');
+    sendPushNotification(partner.id, 'Yeni Özel Mesaj', lang === 'tr' ? `${partner.anonymous_name || 'Biri'} sana özel bir mesaj gönderdi.` : `${partner.anonymous_name || 'Someone'} sent you a private message.`, `/?chat=${myId}`);
+  };
+
+  const handleTranslate = async (msgId: string, textToTranslate: string) => {
+    if (!textToTranslate.trim()) return;
+    setTranslatedMessages(prev => ({ ...prev, [msgId]: { loading: true } }));
+    try {
+      const res = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: textToTranslate, targetLang: lang })
+      });
+      const data = await res.json();
+      if (data.translatedText) {
+        setTranslatedMessages(prev => ({ ...prev, [msgId]: { text: data.translatedText, loading: false } }));
+      } else {
+        setTranslatedMessages(prev => ({ ...prev, [msgId]: { text: 'Çeviri başarısız.', loading: false } }));
+      }
+    } catch (err) {
+      setTranslatedMessages(prev => ({ ...prev, [msgId]: { text: 'Hata oluştu.', loading: false } }));
+    }
   };
 
   return (
@@ -108,10 +133,10 @@ export default function ChatRoom({ myId, partner, onBack }: { myId: string, part
           <h2 className="font-bold text-white flex items-center gap-2">
             {partner.anonymous_name}
             <span className="text-xs bg-fuchsia-500/20 text-fuchsia-300 px-2 py-0.5 rounded-full">
-              %{partner.matchScore} Uyum
+              {lang === 'tr' ? `%${partner.matchScore} Uyum` : `${partner.matchScore}% Match`}
             </span>
           </h2>
-          <p className="text-[10px] text-cyan-300">~{Math.round(partner.distance_meters)}m ötede</p>
+          <p className="text-[10px] text-cyan-300">{lang === 'tr' ? `~${Math.round(partner.distance_meters)}m ötede` : `~${Math.round(partner.distance_meters)}m away`}</p>
         </div>
       </div>
 
@@ -130,13 +155,27 @@ export default function ChatRoom({ myId, partner, onBack }: { myId: string, part
           messages.map((m) => {
             const isMe = m.sender_id === myId;
             return (
-              <div key={m.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+              <div key={m.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} group relative`}>
                 <div className={`max-w-[80%] rounded-2xl p-3 ${isMe ? 'bg-cyan-600 rounded-br-sm' : 'bg-white/15 rounded-bl-sm'}`}>
                   <p className="text-sm text-white">{m.message_text}</p>
+                  
+                  {translatedMessages[m.id]?.loading && <p className="text-[10px] text-cyan-300 mt-1 italic animate-pulse">{lang === 'tr' ? 'Çevriliyor...' : 'Translating...'}</p>}
+                  {translatedMessages[m.id]?.text && <p className="text-xs text-cyan-200 mt-2 border-t border-white/10 pt-1 font-medium">{translatedMessages[m.id].text}</p>}
+
                   <span className="text-[10px] text-white/40 block mt-1 text-right">
                     {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
+
+                {!isMe && (
+                  <button 
+                    onClick={() => handleTranslate(m.id, m.message_text)}
+                    className="absolute -right-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition p-1.5 bg-white/10 rounded-full hover:bg-white/20 text-[10px]"
+                    title={lang === 'tr' ? 'Çevir' : 'Translate'}
+                  >
+                    🌐
+                  </button>
+                )}
               </div>
             );
           })
@@ -150,8 +189,8 @@ export default function ChatRoom({ myId, partner, onBack }: { myId: string, part
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Kozmik ikizine yaz..."
-            className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-3 text-sm text-white placeholder-white/40 focus:outline-none focus:border-fuchsia-500 transition"
+            placeholder={lang === 'tr' ? 'Bir mesaj yaz...' : 'Write a message...'}
+            className="flex-1 bg-black/50 border border-white/10 rounded-full px-4 py-2 text-sm text-white focus:outline-none focus:border-cyan-500/50"
           />
           <button 
             type="submit" 

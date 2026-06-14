@@ -42,6 +42,7 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
   const [incomingRequests, setIncomingRequests] = useState<any[]>([]);
   const [activeChatIds, setActiveChatIds] = useState<Set<string>>(new Set());
   const [publicInput, setPublicInput] = useState('');
+  const [translatedMessages, setTranslatedMessages] = useState<Record<string, { text?: string, loading?: boolean }>>({});
   const [replyingTo, setReplyingTo] = useState<{ senderName: string, text: string } | null>(null);
   const [isPremium, setIsPremium] = useState(false);
   const [dailyRequestCount, setDailyRequestCount] = useState(0);
@@ -230,7 +231,7 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
         setAuthStep('ready');
       },
       (err) => {
-        if (!cancelled) setAuthError(lang === 'tr' ? 'Konum alınamadı. Lütfen izin verin.' : 'Location could not be retrieved.');
+        if (!cancelled) setAuthError(lang === 'tr' ? 'Konum alınamadı. Lütfen izin verin.' : 'Location could not be retrieved. Please allow.');
       },
       { enableHighAccuracy: true }
     );
@@ -328,7 +329,7 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
     }
 
     if (containsProfanity(finalContent)) {
-      alert("Kozmik enerjiyi kirleten kelimeler kullanamazsın!");
+      alert(lang === 'tr' ? "Kozmik enerjiyi kirleten kelimeler kullanamazsın!" : "You cannot use words that pollute the cosmic energy!");
       setPublicInput('');
       setReplyingTo(null);
       return;
@@ -376,8 +377,8 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         userId: selectedProfile.id,
-        title: 'Yeni Kozmik Sohbet İsteği',
-        body: 'Gizemli bir ruh seninle eşleşmek istiyor! Meydana dön ve kim olduğuna bak.',
+        title: lang === 'tr' ? 'Yeni Kozmik Sohbet İsteği' : 'New Cosmic Chat Request',
+        body: lang === 'tr' ? 'Gizemli bir ruh seninle eşleşmek istiyor! Meydana dön ve kim olduğuna bak.' : 'A mysterious soul wants to match with you! Return to the square and see who it is.',
         url: '/'
       })
     }).catch(console.error);
@@ -396,6 +397,35 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
   const rejectRequest = async (req: any) => {
     await supabase!.from('chat_requests').update({ status: 'rejected' }).eq('id', req.id);
     setIncomingRequests(prev => prev.filter(r => r.id !== req.id));
+  };
+
+  const handleTranslate = async (msgId: string, textToTranslate: string) => {
+    if (!textToTranslate.trim()) return;
+    
+    setTranslatedMessages(prev => ({ ...prev, [msgId]: { loading: true } }));
+    
+    try {
+      const res = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: textToTranslate, targetLang: lang })
+      });
+      const data = await res.json();
+      if (data.translatedText) {
+        setTranslatedMessages(prev => ({ ...prev, [msgId]: { text: data.translatedText, loading: false } }));
+      } else {
+        setTranslatedMessages(prev => ({ ...prev, [msgId]: { text: 'Çeviri başarısız.', loading: false } }));
+      }
+    } catch (err) {
+      setTranslatedMessages(prev => ({ ...prev, [msgId]: { text: 'Hata oluştu.', loading: false } }));
+    }
+  };
+
+  const handleLogout = () => {
+    supabase.auth.signOut();
+    localStorage.removeItem('startwin_user');
+    setUserId(null);
+    setAuthStep('login');
   };
 
   if (activeChatPartner && userId) {
@@ -497,18 +527,18 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
 
       <div className="p-4 border-b border-white/10 bg-black/40 backdrop-blur-md rounded-t-[2rem]">
         <div className="flex justify-between items-center mb-3 pr-12">
-          <h2 className="font-black text-lg bg-gradient-to-r from-fuchsia-400 to-cyan-300 bg-clip-text text-transparent">Kozmik Meydan</h2>
+          <h2 className="font-black text-lg bg-gradient-to-r from-fuchsia-400 to-cyan-300 bg-clip-text text-transparent">{lang === 'tr' ? 'Kozmik Meydan' : 'Cosmic Square'}</h2>
           <div className="flex items-center gap-2 z-10">
-            <button onClick={fetchHoroscope} className="text-[11px] px-3 py-1.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 hover:bg-fuchsia-500/30 transition font-bold border border-fuchsia-500/30">🔮 Falım</button>
+            <button onClick={fetchHoroscope} className="text-[11px] px-3 py-1.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 hover:bg-fuchsia-500/30 transition font-bold border border-fuchsia-500/30">🔮 {lang === 'tr' ? 'Falım' : 'My Oracle'}</button>
             <button 
               onClick={async () => {
                 const { subscribeToPushNotifications } = await import('../lib/push');
                 const ok = await subscribeToPushNotifications(supabase, userId!);
-                if (ok) alert('Kozmik bildirimler aktif! Biri sana istek attığında telefonuna bildirim gelecek.');
-                else alert('Bildirim izni alınamadı veya tarayıcınız desteklemiyor.');
+                if (ok) alert(lang === 'tr' ? 'Kozmik bildirimler aktif! Biri sana istek attığında telefonuna bildirim gelecek.' : 'Cosmic notifications active! You will get a notification when someone sends a request.');
+                else alert(lang === 'tr' ? 'Bildirim izni alınamadı veya tarayıcınız desteklemiyor.' : 'Notification permission denied or not supported by your browser.');
               }} 
               className="text-[12px] w-7 h-7 flex items-center justify-center rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition"
-              title="Bildirimleri Aç"
+              title={lang === 'tr' ? 'Bildirimleri Aç' : 'Enable Notifications'}
             >
               🔔
             </button>
@@ -518,11 +548,11 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
             >
               👑 {isPremium ? 'VIP' : 'Premium'}
             </button>
-            <button onClick={handleLogout} className="text-[11px] px-3 py-1.5 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 transition font-bold">Çıkış</button>
+            <button onClick={handleLogout} className="text-[11px] px-3 py-1.5 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 transition font-bold">{lang === 'tr' ? 'Çıkış' : 'Logout'}</button>
           </div>
         </div>
         <div className="flex items-center gap-3 text-xs pr-2">
-          <span className="text-white/60">Mesafe:</span>
+          <span className="text-white/60">{lang === 'tr' ? 'Mesafe:' : 'Distance:'}</span>
           <input type="range" min="100" max="5000" step="100" value={radius} onChange={(e) => setRadius(Number(e.target.value))} className="flex-1 accent-fuchsia-500" />
           <span className="font-bold text-cyan-300 w-12 text-right">{radius < 1000 ? `${radius}m` : `${(radius/1000).toFixed(1)}km`}</span>
         </div>
@@ -536,7 +566,7 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
             const isMe = m.sender_id === userId;
             const localUser = JSON.parse(localStorage.getItem('startwin_user') || '{}');
             const prof = isMe ? localUser : (m.sender_anonymous_name ? { anonymous_name: m.sender_anonymous_name } : nearbyProfiles[m.sender_id]);
-            const anonName = prof?.anonymous_name || 'Gizemli Ruh';
+            const anonName = prof?.anonymous_name || (lang === 'tr' ? 'Gizemli Ruh' : 'Mysterious Soul');
             const signEmoji = prof?.sun_sign ? SIGN_EMOJIS[prof.sun_sign] : '✨';
             const dist = m.delivery_distance ? Math.max(1, Math.round(m.delivery_distance) + (Math.floor(Math.random() * 41) - 20)) : '?';
 
@@ -586,15 +616,28 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
                     )}
                     
                     <p className="text-sm">{displayMessage}</p>
+                    {translatedMessages[m.id]?.loading && <p className="text-[10px] text-cyan-300 mt-1 italic animate-pulse">{lang === 'tr' ? 'Çevriliyor...' : 'Translating...'}</p>}
+                    {translatedMessages[m.id]?.text && <p className="text-xs text-cyan-200 mt-2 border-t border-white/10 pt-1 font-medium">{translatedMessages[m.id].text}</p>}
                     
-                    {!isMe && prof?.anonymous_name && (
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); setReplyingTo({ senderName: prof.anonymous_name, text: displayMessage }); }}
-                        className="absolute -right-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition p-1 bg-white/10 rounded-full hover:bg-white/20"
-                        title="Yanıtla"
-                      >
-                        ↩️
-                      </button>
+                    {!isMe && (
+                      <div className="absolute -right-12 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition flex gap-1">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleTranslate(m.id, displayMessage); }}
+                          className="p-1.5 bg-white/10 rounded-full hover:bg-white/20 text-[10px]"
+                          title={lang === 'tr' ? 'Çevir' : 'Translate'}
+                        >
+                          🌐
+                        </button>
+                        {prof?.anonymous_name && (
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setReplyingTo({ senderName: prof.anonymous_name, text: displayMessage }); }}
+                            className="p-1.5 bg-white/10 rounded-full hover:bg-white/20 text-[10px]"
+                            title={lang === 'tr' ? 'Yanıtla' : 'Reply'}
+                          >
+                            ↩️
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -615,7 +658,7 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
           </div>
         )}
         <form onSubmit={sendPublicMessage} className="flex gap-2">
-          <input type="text" value={publicInput} onChange={(e) => setPublicInput(e.target.value)} placeholder="Meydana fısılda..." className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-2.5" />
+          <input type="text" value={publicInput} onChange={(e) => setPublicInput(e.target.value)} placeholder={lang === 'tr' ? 'Meydana fısılda...' : 'Whisper to the square...'} className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-2.5" />
           <button type="submit" className="bg-gradient-to-r from-fuchsia-500 to-cyan-400 w-10 h-10 rounded-full">➤</button>
         </form>
       </div>
@@ -627,7 +670,7 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
              if (!sender) return null;
              return (
                <div key={req.id} className="bg-black/80 backdrop-blur p-4 rounded-xl border border-cyan-500/30 flex items-center justify-between">
-                 <p className="text-sm">{sender.anonymous_name} sohbet istiyor!</p>
+                 <p className="text-sm">{sender.anonymous_name} {lang === 'tr' ? 'sohbet istiyor!' : 'wants to chat!'}</p>
                  <div className="flex gap-2"><button onClick={() => acceptRequest(req)} className="bg-cyan-600 px-3 py-1 rounded-full">✓</button><button onClick={() => rejectRequest(req)} className="bg-red-900 px-3 py-1 rounded-full">✕</button></div>
                </div>
              )
@@ -638,6 +681,7 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
       {/* Premium Paywall Modal */}
       {showPaywall && (
         <PremiumPaywall 
+          lang={lang}
           onClose={() => setShowPaywall(false)} 
           onSubscribe={async () => {
             setIsPremium(true);
@@ -651,17 +695,16 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
       {selectedProfile && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="bg-[#0f0f1a] w-full max-w-sm rounded-3xl p-6 border border-white/10">
-            <h3 className="text-xl font-bold">{selectedProfile.anonymous_name}</h3>
+          <div className="bg-[#0f0f1a] w-full max-w-sm rounded-3xl p-6 border border-white/10 text-center">
+            <h3 className="text-xl font-black mb-2">{selectedProfile.anonymous_name}</h3>
             {selectedProfile.avatar_url && (
               <div className="w-24 h-24 mx-auto my-4 rounded-full overflow-hidden border-2 border-fuchsia-500/30">
                 <img src={selectedProfile.avatar_url} className="w-full h-full object-cover blur-[12px] scale-125 brightness-75" alt="Gizemli Yüz" />
               </div>
             )}
-            <p className="text-cyan-300 mt-2">Uyum: %{selectedProfile.matchScore}</p>
-            <div className="flex gap-3 mt-6">
-              <button onClick={() => setSelectedProfile(null)} className="flex-1 py-3 rounded-xl bg-white/10">İptal</button>
-              <button onClick={handleSendRequest} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-500">İstek Gönder</button>
-            </div>
+            <p className="text-sm text-white/60 mb-6">{lang === 'tr' ? 'Biri sana, sen de ona bakıyorsun...' : 'Someone is looking at you, and you are looking at them...'}</p>
+            <button onClick={handleSendRequest} className="w-full py-3 rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-400 font-bold mb-3">{lang === 'tr' ? 'Özel Sohbete Davet Et' : 'Invite to Private Chat'}</button>
+            <button onClick={() => setSelectedProfile(null)} className="w-full py-3 rounded-full bg-white/5 font-bold">{lang === 'tr' ? 'Geri Dön' : 'Go Back'}</button>
           </div>
         </div>
       )}
