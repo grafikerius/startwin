@@ -421,12 +421,6 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
     }
   };
 
-  const handleLogout = () => {
-    supabase.auth.signOut();
-    localStorage.removeItem('startwin_user');
-    setUserId(null);
-    setAuthStep('login');
-  };
 
   if (activeChatPartner && userId) {
     return <ChatRoom myId={userId} partner={activeChatPartner} onBack={() => setActiveChatPartner(null)} />;
@@ -694,7 +688,6 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
 
       {selectedProfile && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#0f0f1a] w-full max-w-sm rounded-3xl p-6 border border-white/10">
           <div className="bg-[#0f0f1a] w-full max-w-sm rounded-3xl p-6 border border-white/10 text-center">
             <h3 className="text-xl font-black mb-2">{selectedProfile.anonymous_name}</h3>
             {selectedProfile.avatar_url && (
