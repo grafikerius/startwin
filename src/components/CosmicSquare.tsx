@@ -376,8 +376,8 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
                 <p className="text-white/60 text-sm animate-pulse">Yıldızların mesajı çözülüyor...</p>
               </div>
             ) : (
-              <div className="relative">
-                <div className="text-left text-sm leading-relaxed text-white/90 mb-6 max-h-[60vh] overflow-y-auto scrollbar-hide pb-4 space-y-4">
+              <div id="horoscope-share-card" className="relative bg-[#0b0b1a] rounded-2xl p-4 border border-fuchsia-500/20 shadow-lg shadow-fuchsia-900/20">
+                <div className="text-left text-sm leading-relaxed text-white/90 mb-2 max-h-[60vh] overflow-y-auto scrollbar-hide pb-4 space-y-4">
                   {horoscopeText.split('\n').map((line, i) => {
                     if (!line.trim()) return null;
                     const parts = line.split(/(\*\*.*?\*\*)/g);
@@ -392,18 +392,46 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
                     );
                   })}
                 </div>
+                {/* Filigran */}
+                <div className="mt-4 pt-3 border-t border-white/10 text-center">
+                  <p className="text-[10px] font-bold text-white/40 tracking-widest uppercase">✨ startwin-eta.vercel.app</p>
+                </div>
                 {horoscopeText && horoscopeText.length > 200 && (
-                  <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-[#0b0b1a] to-transparent flex justify-center items-end pointer-events-none">
+                  <div className="absolute bottom-10 left-0 right-0 h-10 bg-gradient-to-t from-[#0b0b1a] to-transparent flex justify-center items-end pointer-events-none">
                     <span className="animate-bounce text-fuchsia-400 mb-1 text-xl">⬇️</span>
                   </div>
                 )}
               </div>
             )}
-            <button 
-              onClick={() => setHoroscopeOpen(false)}
-              className="w-full rounded-xl bg-white/10 py-3 font-bold hover:bg-white/20 transition">
-              Kapat
-            </button>
+            
+            <div className="mt-4 flex gap-3">
+              <button 
+                onClick={() => setHoroscopeOpen(false)}
+                className="flex-1 rounded-xl bg-white/10 py-3 font-bold hover:bg-white/20 transition">
+                Kapat
+              </button>
+              {!loadingHoroscope && (
+                <button 
+                  onClick={async (e) => {
+                    const btn = e.currentTarget;
+                    btn.disabled = true;
+                    const oldText = btn.innerText;
+                    btn.innerText = 'Hazırlanıyor...';
+                    await import('../lib/share').then(m => 
+                      m.shareAsImage(
+                        'horoscope-share-card', 
+                        'startwin-gunluk-fal', 
+                        'Günün Kozmik Falı! Sen de kendi falına bak: https://startwin-eta.vercel.app'
+                      )
+                    );
+                    btn.innerText = oldText;
+                    btn.disabled = false;
+                  }}
+                  className="flex-1 rounded-xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 py-3 font-bold text-white shadow-[0_0_15px_-3px_rgba(255,0,255,0.5)] transition hover:brightness-110">
+                  Paylaş ↗
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

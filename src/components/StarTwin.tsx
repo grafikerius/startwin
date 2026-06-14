@@ -18,6 +18,7 @@ import CosmicSquare from './CosmicSquare';
 import AdminDashboard from './AdminDashboard';
 import { InterstitialAd } from './InterstitialAd';
 import { getSystemSettings } from '../lib/supabase';
+import { shareAsImage } from '../lib/share';
 
 type Lang = 'tr' | 'en';
 type Mode = 'celebrity' | 'custom' | 'nearby';
@@ -708,24 +709,25 @@ function Results({ t, lang, mode, user, partner, cocktail, topMatches, customMat
   const ebcedInfo = getEbcedInterpretation(userEbcedVal, partnerEbcedVal);
 
   const share = async () => {
+    setSharing(true);
     let mixStr = '';
     if (mode === 'celebrity') {
       mixStr = cocktail.map((c) => `%${c.share} ${nm(c.celebrity)}`).join(', ');
     } else {
       mixStr = 'Birlikte dünyayı fethedebiliriz!';
     }
-    const text = t.shareText(topName, matchData.overall, mixStr) + (comment ? `\n${comment}` : '');
-    try {
-      if (navigator.share) await navigator.share({ title: 'StarTwin', text });
-      else { await navigator.clipboard.writeText(text); alert(t.copied); }
-    } catch { /* dismissed */ }
+    const text = t.shareText(topName, matchData.overall, mixStr) + (comment ? `\n${comment}` : '') + '\n\n✨ Sen de dene: https://startwin-eta.vercel.app';
+    
+    await shareAsImage('result-share-card', 'startwin-ikizim', text);
+    setSharing(false);
   };
 
   return (
     <div className="relative h-full animate-[fade_.5s_ease] overflow-y-auto scrollbar-hide p-6 pb-32">
       <p className="text-center text-xs uppercase tracking-[0.3em] text-white/40">{mode === 'celebrity' ? t.cocktailLabel : t.customLabel}</p>
 
-      <div className="relative mt-4 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-fuchsia-600/30 via-violet-700/20 to-cyan-500/30 p-5 shadow-[0_0_50px_-12px_rgba(255,80,220,0.7)]">
+      {/* Paylaşılacak Alan */}
+      <div id="result-share-card" className="relative mt-4 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-fuchsia-600/30 via-violet-700/20 to-cyan-500/30 p-5 shadow-[0_0_50px_-12px_rgba(255,80,220,0.7)]">
         <div className="flex items-center gap-4">
           <Avatar imageUrl={imageUrl} name={topName} />
           <div className="min-w-0">
@@ -761,21 +763,26 @@ function Results({ t, lang, mode, user, partner, cocktail, topMatches, customMat
           </div>
         )}
         
-        <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[10px]">
-          <Tag>✨ Senin Ebcedin: <span className="font-bold text-cyan-200">{userEbcedVal}</span></Tag>
-          {partnerEbcedVal !== undefined && (
-            <Tag>✨ Onun Ebcedi: <span className="font-bold text-fuchsia-300">{partnerEbcedVal}</span></Tag>
+        <div className="mt-4 flex items-center justify-between rounded-2xl bg-black/40 p-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">✨</span>
+            <div>
+              <p className="text-[10px] text-white/50">Senin Ebcedin</p>
+              <p className="text-xs font-bold text-yellow-300">{userEbcedVal}</p>
+            </div>
+          </div>
+          {mode === 'custom' && partnerEbcedVal && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm">🔥</span>
+              <div>
+                <p className="text-[10px] text-white/50">Onun Ebcedi</p>
+                <p className="text-xs font-bold text-fuchsia-300">{partnerEbcedVal}</p>
+              </div>
+            </div>
           )}
         </div>
 
         {ebcedInfo.title && (
-          <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3 text-sm">
-            <div className="mb-1 flex items-center gap-2 font-bold text-white/90">
-              <span>🔮 İsim Numerolojisi:</span>
-              <span className="text-fuchsia-300">{ebcedInfo.title}</span>
-            </div>
-            <p className="text-xs text-white/70 leading-relaxed">
-              {ebcedInfo.desc}
             </p>
           </div>
         )}
