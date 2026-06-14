@@ -549,7 +549,7 @@ function BioForm({ t, lang, form, setForm, title }: { t: TT, lang: Lang, form: P
         </div>
       </FieldWrap>
 
-      <FieldWrap label={t.name}>
+      <FieldWrap label={t.nameTitle}>
         <input className={inputCls} placeholder={t.namePlaceholder} value={form.name ?? ''} onChange={(e) => set('name', e.target.value)} />
       </FieldWrap>
       <FieldWrap label={t.gender}>
