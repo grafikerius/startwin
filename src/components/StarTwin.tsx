@@ -317,7 +317,7 @@ export default function StarTwin({ celebrities = CELEBRITIES }: { celebrities?: 
         <LangToggle lang={lang} onChange={setLang} />
         
         {step < 5 ? (
-          <div className="relative p-7 pt-12">
+          <div className="relative h-full overflow-y-auto scrollbar-hide p-7 pt-12 pb-32">
             <header className="mb-6 text-center">
               <h1 
                 onClick={handleLogoClick}
