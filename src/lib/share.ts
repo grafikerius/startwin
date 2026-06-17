@@ -1,6 +1,6 @@
 import { toBlob } from 'html-to-image';
 
-export async function shareAsImage(elementId: string, fileName: string, text: string) {
+export async function shareAsImage(elementId: string, fileName: string, text: string, url?: string) {
   const node = document.getElementById(elementId);
   if (!node) return false;
 
@@ -18,13 +18,16 @@ export async function shareAsImage(elementId: string, fileName: string, text: st
 
     const file = new File([blob], `${fileName}.png`, { type: 'image/png' });
 
-    // Cihazın yerel paylaşım menüsünü açmayı dene (Instagram, WhatsApp vb. için resim + metin)
+    // Cihazın yerel paylaşım menüsünü açmayı dene (Instagram, WhatsApp vb. için resim + metin + link)
     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({
+      const shareData: ShareData = {
         title: 'StarTwin',
         text: text,
         files: [file]
-      });
+      };
+      if (url) shareData.url = url;
+      
+      await navigator.share(shareData);
       return true;
     } else {
       // Bilgisayardaysa veya tarayıcı desteklemiyorsa, resmi direkt indir

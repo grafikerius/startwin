@@ -487,6 +487,33 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
               </div>
             )}
             
+            {/* Gizli Kompakt Burç Paylaşım Şablonu */}
+            <div 
+              id="compact-horoscope-share" 
+              className="absolute -top-[9999px] left-0 w-[400px] overflow-hidden rounded-[32px] p-8 text-white border border-fuchsia-500/30"
+              style={{ zIndex: -9999, background: 'linear-gradient(135deg, #1a0b2e 0%, #06060f 50%, #0f1b29 100%)' }}
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="mb-6 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.3em] text-fuchsia-400">
+                  <span className="text-xl">✨</span> StarTwin <span className="text-xl">✨</span>
+                </div>
+                
+                <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-fuchsia-500/50 bg-white/5 text-6xl shadow-[0_0_40px_rgba(255,80,220,0.4)] mb-6">
+                  {SIGN[profile?.sun_sign || 'Aries']?.emoji || '🌟'}
+                </div>
+                
+                <h2 className="text-3xl font-black mb-2">Günün Kozmik Falı</h2>
+                <p className="text-cyan-200/80 mb-6 font-medium text-lg">
+                  {SIGN[profile?.sun_sign || 'Aries']?.tr || profile?.sun_sign} Burcu
+                </p>
+                
+                <div className="mt-4 pt-5 w-full flex flex-col items-center justify-center text-sm border-t border-white/10 gap-1">
+                  <span className="text-white/50">Yıldızların sana mesajı var</span>
+                  <span className="font-bold text-cyan-400 tracking-wider">startwin.vercel.app</span>
+                </div>
+              </div>
+            </div>
+            
             <div className="mt-4 flex gap-3">
               <button 
                 onClick={() => setHoroscopeOpen(false)}
@@ -502,9 +529,10 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
                     btn.innerText = 'Hazırlanıyor...';
                     await import('../lib/share').then(m => 
                       m.shareAsImage(
-                        'horoscope-share-card', 
+                        'compact-horoscope-share', 
                         'startwin-gunluk-fal', 
-                        'Günün Kozmik Falı! Sen de kendi falına bak: https://startwin-eta.vercel.app'
+                        `Günün Kozmik Falı: ${horoscopeText.substring(0, 100).replace(/\*\*/g, '')}...\n\n👇 Devamını okumak ve kendi kozmik falına bakmak için bu linke tıkla:`,
+                        'https://startwin-eta.vercel.app'
                       )
                     );
                     btn.innerText = oldText;

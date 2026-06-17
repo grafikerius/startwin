@@ -780,9 +780,10 @@ function Results({ t, lang, mode, user, partner, cocktail, topMatches, customMat
     } else {
       mixStr = 'Birlikte dünyayı fethedebiliriz!';
     }
-    const text = t.shareText(topName, matchData.overall, mixStr) + (comment ? `\n${comment}` : '') + '\n\n✨ Sen de dene: https://startwin-eta.vercel.app';
+    const text = t.shareText(topName, matchData.overall, mixStr) + (comment ? `\n\n${comment}` : '') + '\n\n👇 Sen de kendi kozmik ikizini bulmak istersen bu linke tıkla:';
+    const shareUrl = 'https://startwin-eta.vercel.app';
     
-    await shareAsImage('result-share-card', 'startwin-ikizim', text);
+    await shareAsImage('compact-share-card', 'startwin-ikizim', text, shareUrl);
     setSharing(false);
   };
 
@@ -970,6 +971,49 @@ function Results({ t, lang, mode, user, partner, cocktail, topMatches, customMat
           </div>
         </>
       )}
+
+      {/* Gizli Kompakt Paylaşım Şablonu (Sadece Resim Çıktısı İçin) */}
+      <div 
+        id="compact-share-card" 
+        className="absolute -top-[9999px] left-0 w-[400px] overflow-hidden rounded-[32px] p-8 text-white border border-fuchsia-500/30"
+        style={{ zIndex: -9999, background: 'linear-gradient(135deg, #1a0b2e 0%, #06060f 50%, #0f1b29 100%)' }}
+      >
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-4 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.3em] text-fuchsia-400">
+            <span className="text-xl">✨</span> StarTwin <span className="text-xl">✨</span>
+          </div>
+          
+          <div className="relative mb-8 mt-2">
+            <div className="h-44 w-44 overflow-hidden rounded-full border-4 border-fuchsia-500/50 shadow-[0_0_40px_rgba(255,80,220,0.4)]">
+              {imageUrl ? (
+                <img src={imageUrl} alt={topName} className="h-full w-full object-cover" crossOrigin="anonymous" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-fuchsia-500 to-cyan-400 text-6xl font-black text-black">
+                  {topName.charAt(0)}
+                </div>
+              )}
+            </div>
+            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-fuchsia-400 to-cyan-400 px-5 py-2 text-2xl font-black text-black shadow-[0_4px_20px_rgba(0,255,255,0.4)]">
+              %{matchData.overall}
+            </div>
+          </div>
+          
+          <p className="text-[10px] uppercase tracking-widest text-cyan-200/80 mb-1">{t.topMatch}</p>
+          <h2 className="text-3xl font-black mb-4">{topName}</h2>
+          
+          <div className="flex flex-wrap justify-center gap-2 text-xs mb-4">
+            <Tag>{SIGN[topSign]?.emoji || '✨'} {SIGN[topSign]?.[lang] || topSign}</Tag>
+            {topFields.slice(0, 2).map((f: Field) => (
+               <Tag key={f}>{FIELD_LABEL[f]?.emoji} {FIELD_LABEL[f]?.[lang]}</Tag>
+            ))}
+          </div>
+          
+          <div className="mt-6 pt-5 w-full flex flex-col items-center justify-center text-sm border-t border-white/10 gap-1">
+            <span className="text-white/50">Senin kozmik ikizin kim?</span>
+            <span className="font-bold text-cyan-400 tracking-wider">startwin.vercel.app</span>
+          </div>
+        </div>
+      </div>
 
     </div>
   );
