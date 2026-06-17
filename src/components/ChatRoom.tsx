@@ -43,7 +43,11 @@ export default function ChatRoom({ myId, partner, onBack }: { myId: string, part
         },
         (payload) => {
           if (payload.new.sender_id === partner.id) {
-            setMessages((prev) => [...prev, payload.new]);
+            setMessages((prev) => {
+              // check if it's already there to prevent duplication
+              if (prev.find(m => m.id === payload.new.id)) return prev;
+              return [...prev, payload.new];
+            });
           }
         }
       )

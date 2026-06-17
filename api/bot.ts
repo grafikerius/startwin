@@ -92,10 +92,11 @@ ${ebcedKnowledge}
 ${chatHistory}
 Şu an bir kullanıcı meydanda şunu yazdı: "${record.message_text}"
 
-Sohbetin geçmişini (varsa) göz önünde bulundurarak, bu son mesaja çok doğal, sohbete akıcı bir şekilde devam eden bir cevap yaz. 
+Sohbetin geçmişini (varsa) göz önünde bulundurarak, bu son mesaja son derece doğal, sanki karşısında gerçek bir insanla mesajlaşıyormuş gibi hissettiren bir cevap yaz.
 ÖNEMLİ KURALLAR:
-1. Destan yazma! Cevapların çok kısa, öz ve akıcı olsun (En fazla 2-3 cümle).
-2. Kullanıcı hangi dilde yazdıysa, ona KESİNLİKLE aynı dilde cevap ver!`;
+1. Destan yazma! Cevapların çok kısa, günlük mesajlaşma tarzında ve akıcı olsun (En fazla 1-3 cümle).
+2. Arada sırada "hmm...", "ah", "ya", "mmm" gibi doğal düşünme ve tepki sesleri kullan. Robotik veya aşırı resmi "Size nasıl yardımcı olabilirim?" ifadelerinden KESİNLİKLE kaçın.
+3. Kullanıcı hangi dilde yazdıysa, ona KESİNLİKLE aynı dilde cevap ver!`;
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
     
