@@ -98,7 +98,7 @@ Sohbetin geçmişini (varsa) göz önünde bulundurarak, bu son mesaja son derec
 2. Arada sırada "hmm...", "ah", "ya", "mmm" gibi doğal düşünme ve tepki sesleri kullan. Robotik veya aşırı resmi "Size nasıl yardımcı olabilirim?" ifadelerinden KESİNLİKLE kaçın.
 3. Kullanıcı hangi dilde yazdıysa, ona KESİNLİKLE aynı dilde cevap ver!`;
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL || 'gemini-2.5-flash'}:generateContent?key=${process.env.GEMINI_API_KEY}`;
     
     const aiRes = await fetch(geminiUrl, {
       method: 'POST',
