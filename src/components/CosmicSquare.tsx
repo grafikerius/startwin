@@ -488,11 +488,12 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
             )}
             
             {/* Gizli Kompakt Burç Paylaşım Şablonu */}
-            <div 
-              id="compact-horoscope-share" 
-              className="absolute -top-[9999px] left-0 w-[400px] overflow-hidden rounded-[32px] p-8 text-white border border-fuchsia-500/30"
-              style={{ zIndex: -9999, background: 'linear-gradient(135deg, #1a0b2e 0%, #06060f 50%, #0f1b29 100%)' }}
-            >
+            <div style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', zIndex: -9999 }}>
+              <div 
+                id="compact-horoscope-share" 
+                className="w-[400px] overflow-hidden rounded-[32px] p-8 text-white border border-fuchsia-500/30"
+                style={{ background: 'linear-gradient(135deg, #1a0b2e 0%, #06060f 50%, #0f1b29 100%)' }}
+              >
               <div className="flex flex-col items-center text-center">
                 <div className="mb-6 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.3em] text-fuchsia-400">
                   <span className="text-xl">✨</span> StarTwin <span className="text-xl">✨</span>
@@ -512,6 +513,7 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
                   <span className="font-bold text-cyan-400 tracking-wider">startwin.vercel.app</span>
                 </div>
               </div>
+            </div>
             </div>
             
             <div className="mt-4 flex gap-3">

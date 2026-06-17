@@ -973,11 +973,12 @@ function Results({ t, lang, mode, user, partner, cocktail, topMatches, customMat
       )}
 
       {/* Gizli Kompakt Paylaşım Şablonu (Sadece Resim Çıktısı İçin) */}
-      <div 
-        id="compact-share-card" 
-        className="absolute -top-[9999px] left-0 w-[400px] overflow-hidden rounded-[32px] p-8 text-white border border-fuchsia-500/30"
-        style={{ zIndex: -9999, background: 'linear-gradient(135deg, #1a0b2e 0%, #06060f 50%, #0f1b29 100%)' }}
-      >
+      <div style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', zIndex: -9999 }}>
+        <div 
+          id="compact-share-card" 
+          className="w-[400px] overflow-hidden rounded-[32px] p-8 text-white border border-fuchsia-500/30"
+          style={{ background: 'linear-gradient(135deg, #1a0b2e 0%, #06060f 50%, #0f1b29 100%)' }}
+        >
         <div className="flex flex-col items-center text-center">
           <div className="mb-4 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.3em] text-fuchsia-400">
             <span className="text-xl">✨</span> StarTwin <span className="text-xl">✨</span>
@@ -986,7 +987,7 @@ function Results({ t, lang, mode, user, partner, cocktail, topMatches, customMat
           <div className="relative mb-8 mt-2">
             <div className="h-44 w-44 overflow-hidden rounded-full border-4 border-fuchsia-500/50 shadow-[0_0_40px_rgba(255,80,220,0.4)]">
               {imageUrl ? (
-                <img src={imageUrl} alt={topName} className="h-full w-full object-cover" crossOrigin="anonymous" />
+                <img src={thumb(imageUrl) || imageUrl} alt={topName} className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-fuchsia-500 to-cyan-400 text-6xl font-black text-black">
                   {topName.charAt(0)}
@@ -1013,6 +1014,7 @@ function Results({ t, lang, mode, user, partner, cocktail, topMatches, customMat
             <span className="font-bold text-cyan-400 tracking-wider">startwin.vercel.app</span>
           </div>
         </div>
+      </div>
       </div>
 
     </div>
