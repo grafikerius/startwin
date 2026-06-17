@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export type AdSettings = {
   banner_enabled: boolean;
@@ -11,7 +11,33 @@ export type AdSettings = {
 };
 
 export function AdBanner({ settings, className = "" }: { settings: AdSettings | null, className?: string }) {
+  useEffect(() => {
+    if (settings?.banner_enabled && settings.banner_image_url.startsWith('adsense:')) {
+      try {
+        // @ts-ignore
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (e) {
+        console.error("AdSense error:", e);
+      }
+    }
+  }, [settings]);
+
   if (!settings || !settings.banner_enabled) return null;
+
+  if (settings.banner_image_url.startsWith('adsense:')) {
+    const slot = settings.banner_image_url.split(':')[1];
+    return (
+      <div className={`w-full overflow-hidden flex justify-center text-center relative ${className}`}>
+        <span className="absolute top-0 left-0 text-[8px] text-white/30 z-10 px-1">Reklam</span>
+        <ins className="adsbygoogle w-full"
+             style={{ display: 'block' }}
+             data-ad-client="ca-pub-2536958363581984"
+             data-ad-slot={slot}
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+      </div>
+    );
+  }
 
   // Use test ad if url is empty
   const imgUrl = settings.banner_image_url || 'https://via.placeholder.com/728x90.png?text=Sponsor+Alanı+(Test)';

@@ -9,14 +9,15 @@ interface PremiumPaywallProps {
 export default function PremiumPaywall({ onClose, onSubscribe, lang = 'tr' }: PremiumPaywallProps) {
   const [loading, setLoading] = useState(false);
 
+  const [showSoon, setShowSoon] = useState(false);
+
   const handleCheckout = () => {
     setLoading(true);
-    // Stripe Test Modu Simülasyonu
     setTimeout(() => {
-      onSubscribe(); // Şimdilik anında başarılı varsayıyoruz (Test)
       setLoading(false);
-      onClose();
-    }, 1500);
+      setShowSoon(true);
+      setTimeout(() => setShowSoon(false), 3000);
+    }, 800);
   };
 
   return (
@@ -54,12 +55,12 @@ export default function PremiumPaywall({ onClose, onSubscribe, lang = 'tr' }: Pr
 
         <button 
           onClick={handleCheckout} 
-          disabled={loading}
-          className="relative z-10 w-full py-4 rounded-xl bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-black font-bold text-lg shadow-[0_0_30px_rgba(250,204,21,0.4)] hover:scale-105 transition active:scale-95 disabled:opacity-50"
+          disabled={loading || showSoon}
+          className="relative z-10 w-full py-4 rounded-xl bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-black font-bold text-lg shadow-[0_0_30px_rgba(250,204,21,0.4)] hover:scale-105 transition active:scale-95 disabled:opacity-80"
         >
-          {loading ? 'Bağlanıyor...' : 'Aylık Sadece ₺99'}
+          {loading ? 'Bağlanıyor...' : showSoon ? 'Çok Yakında!' : 'Aylık Sadece ₺99'}
         </button>
-        <p className="mt-4 text-[10px] text-white/40 relative z-10">Stripe Test Modu aktif. Gerçek para çekilmez.</p>
+        <p className="mt-4 text-[10px] text-white/40 relative z-10">Ödeme altyapısı entegrasyon aşamasındadır.</p>
       </div>
     </div>
   );

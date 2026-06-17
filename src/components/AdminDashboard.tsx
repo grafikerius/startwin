@@ -189,8 +189,8 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
                   
                   <div className="grid gap-4">
                     <div>
-                      <label className="block text-xs text-white/50 mb-1">Görsel URL (Boş bırakılırsa Test görseli çıkar)</label>
-                      <input type="text" value={adSettings.banner_image_url} onChange={(e) => setAdSettings({...adSettings, banner_image_url: e.target.value})} className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-cyan-500 outline-none" placeholder="https://..." />
+                      <label className="block text-xs text-white/50 mb-1">Görsel URL (veya AdSense için adsense:SLOT_ID yazın)</label>
+                      <input type="text" value={adSettings.banner_image_url} onChange={(e) => setAdSettings({...adSettings, banner_image_url: e.target.value})} className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-cyan-500 outline-none" placeholder="https://... veya adsense:123456" />
                     </div>
                     <div>
                       <label className="block text-xs text-white/50 mb-1">Yönlendirme Linki (Tıklanınca gidilecek adres)</label>

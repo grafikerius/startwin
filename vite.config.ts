@@ -77,7 +77,8 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'autoUpdate',
         workbox: {
-          importScripts: ['/push-worker.js']
+          importScripts: ['/push-worker.js'],
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,json}']
         },
         manifest: {
           name: 'StarTwin',
