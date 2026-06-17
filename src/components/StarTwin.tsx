@@ -973,7 +973,7 @@ function Results({ t, lang, mode, user, partner, cocktail, topMatches, customMat
       )}
 
       {/* Gizli Kompakt Paylaşım Şablonu (Sadece Resim Çıktısı İçin) */}
-      <div style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', zIndex: -9999 }}>
+      <div className="absolute pointer-events-none opacity-0 z-[-1]" style={{ left: 0, top: 0 }}>
         <div 
           id="compact-share-card" 
           className="w-[400px] overflow-hidden rounded-[32px] p-8 text-white border border-fuchsia-500/30"

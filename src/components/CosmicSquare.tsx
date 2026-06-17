@@ -61,15 +61,21 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
     setHoroscopeOpen(true);
     setLoadingHoroscope(true);
     try {
-      const chart = calculateSigns(user.birth_date, user.birth_time);
+      const localUser = JSON.parse(localStorage.getItem('startwin_user') || '{}');
+      const targetName = localUser.name || user.name || 'Gizemli Ruh';
+      const targetDate = localUser.birth_date || user.birth_date;
+      const targetTime = localUser.birth_time || user.birth_time;
+      const targetMbti = localUser.mbti_type || user.mbti_type;
+      
+      const chart = calculateSigns(targetDate, targetTime);
 
       const res = await fetch('/api/horoscope', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: user.name,
+          name: targetName,
           chart,
-          mbti_type: user.mbti_type,
+          mbti_type: targetMbti,
           lang
         })
       });
@@ -488,7 +494,7 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
             )}
             
             {/* Gizli Kompakt Burç Paylaşım Şablonu */}
-            <div style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', zIndex: -9999 }}>
+            <div className="absolute pointer-events-none opacity-0 z-[-1]" style={{ left: 0, top: 0 }}>
               <div 
                 id="compact-horoscope-share" 
                 className="w-[400px] overflow-hidden rounded-[32px] p-8 text-white border border-fuchsia-500/30"
@@ -503,7 +509,23 @@ export default function CosmicSquare({ user, onRestart, t, lang }: { user: UserI
                   {SIGN[profile?.sun_sign || 'Aries']?.emoji || '🌟'}
                 </div>
                 
-                <h2 className="text-3xl font-black mb-2">Günün Kozmik Falı</h2>
+                <h2 className="text-3xl font-black mb-4">Günün Kozmik Falı</h2>
+                
+                <div className="text-left text-sm leading-relaxed text-white/90 mb-6 w-full space-y-3">
+                  {horoscopeText && horoscopeText.split('\n').map((line, i) => {
+                    if (!line.trim()) return null;
+                    const parts = line.split(/(\*\*.*?\*\*)/g);
+                    return (
+                      <p key={i} className="mb-1">
+                        {parts.map((part, j) => 
+                          part.startsWith('**') && part.endsWith('**') 
+                            ? <strong key={j} className="text-fuchsia-300 font-bold block mt-2 mb-1 text-base">{part.slice(2, -2)}</strong> 
+                            : part
+                        )}
+                      </p>
+                    );
+                  })}
+                </div>
                 <p className="text-cyan-200/80 mb-6 font-medium text-lg">
                   {SIGN[profile?.sun_sign || 'Aries']?.tr || profile?.sun_sign} Burcu
                 </p>
