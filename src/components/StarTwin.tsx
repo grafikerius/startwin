@@ -322,7 +322,7 @@ export default function StarTwin({ celebrities = CELEBRITIES }: { celebrities?: 
       <div className="relative w-full max-w-sm h-[100dvh] sm:h-[calc(100dvh-2rem)] max-h-[850px] flex flex-col overflow-hidden sm:rounded-[2rem] border-x border-white/5 sm:border-white/10 bg-white/[0.03] sm:shadow-[0_0_60px_-15px_rgba(124,92,255,0.6)] backdrop-blur-xl">
         <Glow />
         <InstallAppButton />
-        <LangToggle lang={lang} onChange={setLang} />
+        {step !== 5 && <LangToggle lang={lang} onChange={setLang} />}
         
         {step < 5 ? (
           <div className="relative flex-1 w-full overflow-y-auto scrollbar-hide p-7 pt-12 pb-32">
