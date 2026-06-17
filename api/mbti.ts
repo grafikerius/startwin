@@ -32,7 +32,7 @@ ONLY and STRICTLY return the 4-letter result (e.g. INFP). Do not write any other
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.3, maxOutputTokens: 10 }
+        generationConfig: { temperature: 0.3, maxOutputTokens: 200 }
       })
     });
 
