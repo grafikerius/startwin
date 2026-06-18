@@ -85,10 +85,6 @@ Bir sayının 9'a bölümünden kalanı bulunur (Kalan 0 ise 9 kabul edilir).
 Kullanıcı sana Ebced numarasını verirse, içinden sayıyı 9'a bölüp kalanını hesapla ve ona buradaki kütüphane verisine göre kısaca açıkla.`;
 
     const prompt = `Uygulamanın adı: StarTwin.
-${botPersona}
-
-${ebcedKnowledge}
-
 ${chatHistory}
 Şu an bir kullanıcı meydanda şunu yazdı: "${record.message_text}"
 
@@ -98,25 +94,32 @@ Sohbetin geçmişini (varsa) göz önünde bulundurarak, bu son mesaja son derec
 2. Arada sırada "hmm...", "ah", "ya", "mmm" gibi doğal düşünme ve tepki sesleri kullan. Robotik veya aşırı resmi "Size nasıl yardımcı olabilirim?" ifadelerinden KESİNLİKLE kaçın.
 3. Kullanıcı hangi dilde yazdıysa, ona KESİNLİKLE aynı dilde cevap ver!`;
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL || 'gemini-2.5-flash'}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    const anthropicUrl = 'https://api.anthropic.com/v1/messages';
     
-    const aiRes = await fetch(geminiUrl, {
+    const aiRes = await fetch(anthropicUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+        'anthropic-version': '2023-06-01'
+      },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.9 } // maxOutputTokens kaldırıldı
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 150,
+        temperature: 0.9,
+        system: botPersona + "\n\n" + ebcedKnowledge,
+        messages: [{ role: 'user', content: prompt }]
       })
     });
 
     const aiData = await aiRes.json();
-    let replyText = aiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+    let replyText = aiData?.content?.[0]?.text;
 
-    // Gemini API bir hata verirse varsayılan samimi bir cevap ver
+    // Claude API bir hata verirse varsayılan samimi bir cevap ver
     if (!replyText) {
        const errMessage = aiData?.error?.message || "Unknown error";
-       const keyCheck = process.env.GEMINI_API_KEY ? "Key Exists" : "Key MISSING!";
-       console.error("Gemini Error:", errMessage, "Key:", keyCheck);
+       const keyCheck = process.env.ANTHROPIC_API_KEY ? "Key Exists" : "Key MISSING!";
+       console.error("Claude Error:", errMessage, "Key:", keyCheck);
        replyText = isBotA ? "Aa ne güzel söyledin! Sence de öyle değil mi? ✨" : "Kesinlikle katılıyorum sana dostum. Peki sen nasılsın? 🌌";
     }
 

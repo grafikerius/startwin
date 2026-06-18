@@ -25,19 +25,25 @@ User's text: "${text}"
 
 ONLY and STRICTLY return the 4-letter result (e.g. INFP). Do not write any other words, punctuation, or explanations.`;
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    const anthropicUrl = 'https://api.anthropic.com/v1/messages';
     
-    const aiRes = await fetch(geminiUrl, {
+    const aiRes = await fetch(anthropicUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+        'anthropic-version': '2023-06-01'
+      },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.3, maxOutputTokens: 200 }
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 100,
+        temperature: 0.3,
+        messages: [{ role: 'user', content: prompt }]
       })
     });
 
     const aiData = await aiRes.json();
-    let replyText = aiData?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    let replyText = aiData?.content?.[0]?.text?.trim();
 
     if (!replyText || replyText.length > 4) {
        replyText = "ENFP"; // Fallback

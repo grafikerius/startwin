@@ -49,24 +49,30 @@ Your reading must include these sections (use line breaks and emojis):
 
 Your tone should be very professional, poetic, mystical, and impressive. Speak directly to them ("You").`;
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    const anthropicUrl = 'https://api.anthropic.com/v1/messages';
     
-    const aiRes = await fetch(geminiUrl, {
+    const aiRes = await fetch(anthropicUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+        'anthropic-version': '2023-06-01'
+      },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.9 }
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 1000,
+        temperature: 0.9,
+        messages: [{ role: 'user', content: prompt }]
       })
     });
 
     const aiData = await aiRes.json();
-    let replyText = aiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+    let replyText = aiData?.content?.[0]?.text;
 
     if (!replyText) {
        const errMessage = aiData?.error?.message || "Unknown error";
-       const keyCheck = process.env.GEMINI_API_KEY ? "Key Exists" : "Key MISSING!";
-       replyText = `HATA: Gemini API yanıt vermedi. Detay: ${errMessage}. (API Anahtarı: ${keyCheck})`;
+       const keyCheck = process.env.ANTHROPIC_API_KEY ? "Key Exists" : "Key MISSING!";
+       replyText = `HATA: Claude API yanıt vermedi. Detay: ${errMessage}. (API Anahtarı: ${keyCheck})`;
     }
 
     return res.status(200).json({ success: true, horoscope: replyText });
